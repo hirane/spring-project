@@ -1,0 +1,16 @@
+-- Table: public.user_info
+
+-- DROP TABLE public.user_info;
+
+CREATE TABLE public.user_info
+(
+    user_id character varying COLLATE pg_catalog."default" NOT NULL,
+    user_name character varying COLLATE pg_catalog."default" NOT NULL,
+    password character varying COLLATE pg_catalog."default",
+    CONSTRAINT "User_pkey" PRIMARY KEY (user_id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.user_info
+    OWNER to postgres;
