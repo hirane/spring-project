@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>ユーザ一覧</title>
+</head>
+<body>
+	<p th:if="${#lists.isEmpty(userList)}">ユーザが登録されていません</p>
+    <table border="1" th:if="!${#lists.isEmpty(userList)}">
+        <tr>
+            <th>ユーザID</th>
+            <th>ユーザ名</th>
+            <th>パスワード</th>
+        </tr>
+        <tr th:each="list : ${userlist}" th:object="${list}">
+            <td th:text="*{user_id}"></td>
+            <td th:text="*{user_name}"></td>
+            <td th:text="*{password}"></td>
+        </tr>
+    </table>
+</body>
+</html>

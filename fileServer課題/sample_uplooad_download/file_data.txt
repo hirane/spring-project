@@ -1,0 +1,16 @@
+-- Table: public.file_data
+
+-- DROP TABLE public.file_data;
+
+CREATE TABLE public.file_data
+(
+    file_id integer NOT NULL,
+    file_name character varying COLLATE pg_catalog."default",
+    file_obj oid,
+    CONSTRAINT file_data_pkey PRIMARY KEY (file_id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.file_data
+    OWNER to postgres;

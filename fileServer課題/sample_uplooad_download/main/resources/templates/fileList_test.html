@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.ord">
+<head>
+<meta charset="UTF-8">
+<title>ファイル一覧</title>
+</head>
+<body>
+  <form method="POST" enctype="multipart/form-data" action="/upload">
+	<input type="file" name="upload_file">
+	<button type="submit">アップロード</button>
+  </form>
+
+  <form method="POST" action="/download">
+    <table border="1">
+        <tr>
+            <th>ファイルID</th>
+            <th>ファイル名</th>
+            <th>オブジェクト</th>
+            <th>DL</th>
+        </tr>
+        <tr th:each="list : ${fileList}" th:object="${list}">
+            <td th:text="*{fileId}"></td>
+            <td th:text="*{fileName}"></td>
+            <td th:text="*{fileObj}"></td>
+            <td><button type="submit" name="download_id" th:value="*{fileId}">ダウンロード</button></td>
+        </tr>
+    </table>
+  </form>
+</body>
+</html>
