@@ -50,6 +50,15 @@ public class UserService {
 	}
 
 	/**
+	 * ユーザIDをキーにユーザ情報を取得
+	 * @param userId
+	 * @return
+	 */
+	public Users findById(String userId){
+		return userMapper.findById(userId);
+	}
+
+	/**
 	 * DBユーザ権限変更
 	 * @param newAuthority
 	 */
@@ -82,7 +91,7 @@ public class UserService {
 	public void updatePassword(String newPassword, String userId) {
 		//パスワードをハッシュ化
 		String newHashedPassword = passwordEncoder.encode(newPassword);
-		userMapper.updateName(newHashedPassword, userId);
+		userMapper.updatePassword(newHashedPassword, userId);
 	}
 
 	/**
