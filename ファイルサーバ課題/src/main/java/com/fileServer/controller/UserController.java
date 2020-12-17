@@ -8,13 +8,11 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -219,7 +217,8 @@ public class UserController {
 
 	//ーーーーーーーーーーーーーファイル表示画面ーーーーーーーーーーーーーーーーー
 
-	/*    *//**
+	/*FileControllerで処理しているため削除
+	 *     *//**
 			* 「/FileView」アクセス時：ファイル表示画面に遷移
 			* @param model
 			* @return
@@ -228,16 +227,4 @@ public class UserController {
 				public String showFileView(Model model){
 				return "fileView";
 				}*/
-
-	//ーーーーーーーーーーーーーログイン画面ーーーーーーーーーーーーーーーーー
-	/**
-	 *テスト用「/login」アクセス時の処理
-	 * @param model
-	 * @return
-	 */
-	@RequestMapping("/login")
-	public String showLoginForm(Model model) {
-		//ログイン画面へ遷移。
-		return "login_test";
-	}
 }

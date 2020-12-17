@@ -14,7 +14,7 @@ public class DbUsersDetails extends org.springframework.security.core.userdetail
     public DbUsersDetails(Users users,
             Collection<GrantedAuthority> authorities) {
 
-        super(users.getUser_name(), users.getPassword(),
+        super(users.getUserName(), users.getPassword(),
                 true, true, true, true, authorities);
 
         this.users = users;

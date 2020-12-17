@@ -24,10 +24,10 @@ public class DbUsersDetailsService implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String mailAddress)
+    public UserDetails loadUserByUsername(String userId)
             throws UsernameNotFoundException {
         //DBからユーザ情報を取得。
-        Users users = Optional.ofNullable(loginMapper.findUsers(mailAddress))
+        Users users = Optional.ofNullable(loginMapper.findUsers(userId))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
         return new DbUsersDetails(users, getAuthorities(users));

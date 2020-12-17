@@ -32,12 +32,11 @@ public class FileController {
 	//ファイルの検索に関するメソッドを参照する
 	FileMapper fileMapper;
 	//ユーザ情報検索に関するメソッドを参照する
-//	@Autowired
-//	private UserMapper userMapper;
+	//	@Autowired
+	//	private UserMapper userMapper;
 	//作成・更新者情報を自動で取得するため
-//	@Autowired
-//	private LoginMapper loginMapper;
-
+	//	@Autowired
+	//	private LoginMapper loginMapper;
 
 	/* Mapping元のURL
 	/logout
@@ -64,7 +63,6 @@ public class FileController {
 	 * → lo_unlinkなどをSQL側で使用か
 	*/
 
-
 	/*
 	 * パスについて、デフォルトでアップロードされる先がeclipseのワークフォルダのプロジェクトドルだ名の直下になっている
 	 * →ただし、エクスプローラーなどからは見えていないので、ファイル移動などの際にエクスプローラーを開いて選ばせる方法は不可か
@@ -79,45 +77,42 @@ public class FileController {
 	 *
 	 * */
 
-
 	//ログイン機能実装後削除します
-	@GetMapping("/")
-	@Transactional(readOnly=false)
+	@GetMapping("/fileView")
+	@Transactional(readOnly = false)
 	public ModelAndView toMoveView(Model model) {
 		ModelAndView mav = new ModelAndView();
 		List<FileData> fileList = fileMapper.findAll();
 		mav.addObject("files", fileList);
 		mav.setViewName("fileView");
-//		model.addAttribute("files", fileList);
+		//		model.addAttribute("files", fileList);
 		return mav;
-//		return "fileView";
+		//		return "fileView";
 	}
 
+	/*ページ遷移系検討途中
+		//ファイルサーバ画面トップに移動
+		@GetMapping("/move")
+		public ModelAndView toMoveView(@RequestParam("moveButton") String fromWhere) {
+			ModelAndView mav = new ModelAndView();
+			List<FileData> fileList = fileMapper.findAll();
 
-	//ファイルサーバ画面トップに移動
-	@GetMapping("/move")
-	public ModelAndView toMoveView(@RequestParam("moveButton") String fromWhere) {
-		ModelAndView mav = new ModelAndView();
-		List<FileData> fileList = fileMapper.findAll();
-		/*
-		 * ファイルサーバ画面: 権限情報(authority)を取得するためユーザ情報にアクセス
-		 * ユーザ情報更新画面・ユーザ管理画面: ユーザ情報表示のため
-		 */
-//		List<User> userList = fileMapper.findAll();
-		mav.addObject("files", fileList);
-//		mav.addObject("users", userList);
-		//どのボタンからのリクエスト化で遷移先の変更
-		if(fromWhere.equals("ファイルサーバ")) {
-			mav.setViewName("fileView");
-		} else if(fromWhere.equals("ユーザ情報更新")) {
-			mav.setViewName("account");
-		} else if(fromWhere.equals("ユーザ管理")) {
-			mav.setViewName("userList");
-		}
-		return mav;
-	}
+			 * ファイルサーバ画面: 権限情報(authority)を取得するためユーザ情報にアクセス
+			 * ユーザ情報更新画面・ユーザ管理画面: ユーザ情報表示のため
 
-
+	//		List<User> userList = fileMapper.findAll();
+			mav.addObject("files", fileList);
+	//		mav.addObject("users", userList);
+			//どのボタンからのリクエスト化で遷移先の変更
+			if(fromWhere.equals("ファイルサーバ")) {
+				mav.setViewName("fileView");
+			} else if(fromWhere.equals("ユーザ情報更新")) {
+				mav.setViewName("account");
+			} else if(fromWhere.equals("ユーザ管理")) {
+				mav.setViewName("userList");
+			}
+			return mav;
+		}*/
 
 	//ファイルのダウンロード → 複数個選択したときにどのように値を取るかは要検討
 	//仮で、ファイル横にダウンロードボタンをつけて個別ダウンロードにしています
@@ -129,7 +124,7 @@ public class FileController {
 	 * */
 	@RequestMapping("/downloadDir")
 	@Transactional(readOnly = false)
-	public String download(@RequestParam("downloadDir") long id, HttpServletResponse response){
+	public String download(@RequestParam("downloadDir") long id, HttpServletResponse response) {
 		//ファイルのパスは、例えば「C:\\Users\\fujit\\GoogleDrive\\javaProject\\fileServer\\sampleExcel - コピー.xlsx」など
 		//ダウンロード対象のファイルデータを取得
 		FileData file = fileMapper.findById(id);
@@ -145,10 +140,10 @@ public class FileController {
 		response.setHeader("Pragma", "");
 		//ダウンロード時のファイル名を指定
 		//→現状のままだとスペースがあった場合に+が挿入されてしまっている
-		response.setHeader("Content-Disposition","attachment;filename=\"" + getFileName(absFilePath) + "\"");
+		response.setHeader("Content-Disposition", "attachment;filename=\"" + getFileName(absFilePath) + "\"");
 
 		//ダウンロードファイルへ出力
-		try{
+		try {
 			OutputStream os = response.getOutputStream();
 			InputStream is = file.getFileObj();
 			byte[] buff = new byte[8192];
@@ -160,7 +155,7 @@ public class FileController {
 			}
 			//バッファにためたデータを書き込む
 			os.flush();
-		}catch(Exception e){
+		} catch (Exception e) {
 			System.err.println(e);
 		}
 
@@ -169,13 +164,13 @@ public class FileController {
 	}
 
 	//ダウンロード時のファイル名をパスから取得
-	private String getFileName(String filePath){
+	private String getFileName(String filePath) {
 		String fileName = "";
-		if(filePath != null && !"".equals(filePath)){
-			try{
+		if (filePath != null && !"".equals(filePath)) {
+			try {
 				//ファイル名をUTF-8でエンコードして指定
 				fileName = URLEncoder.encode(new File(filePath).getName(), "UTF-8");
-			}catch(Exception e){
+			} catch (Exception e) {
 				System.err.println(e);
 				return "";
 			}
@@ -183,40 +178,31 @@ public class FileController {
 		return fileName;
 	}
 
-
-
-
-
 	//フォルダのダウンロード
-//	@RequestMapping("/downloadDir")
-//	publilc String download(@RequestParam("downloadDir") String fileId, HttpServletResponse response) {
-//
-//	}
-
-
-
-
-
-
+	//	@RequestMapping("/downloadDir")
+	//	publilc String download(@RequestParam("downloadDir") String fileId, HttpServletResponse response) {
+	//
+	//	}
 
 	//ファイル・フォルダのアップロード(DBへのINSERT処理)
 	//アップロード時に、対応可能な拡張子のみ判断して、対象外のものはエラーではねるのがいいか
 	//→アップロード不可能なものが多いのでどうにかならないか。PDFくらいは可能にしたいが
 	@PostMapping("/upload")
-//	@RequestMapping(value = "/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	//	@RequestMapping(value = "/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Transactional(readOnly = false)
-	public ModelAndView upload(@RequestPart MultipartFile[] multipartFile, Model model/*,
-			@AuthenticationPrincipal DbUsersDetails loginUser*/) {
-		for (MultipartFile file: multipartFile) {
+	public ModelAndView upload(@RequestPart MultipartFile[] multipartFile,
+			Model model/*,
+						@AuthenticationPrincipal DbUsersDetails loginUser*/) {
+		for (MultipartFile file : multipartFile) {
 			FileData fileData = new FileData();
 			//最大値IDを取得
 			long maxId = fileMapper.getMaxId();
 			//追加するデータを作成
 			fileData.setFileId(maxId + 1);
 			fileData.setFileName(file.getOriginalFilename());
-			try{
+			try {
 				fileData.setFileObj(file.getInputStream());
-			}catch(Exception e){
+			} catch (Exception e) {
 				System.err.println(e);
 			}
 			//現在の日時を取得
@@ -245,14 +231,7 @@ public class FileController {
 
 	}
 
-
-
-
-
 	//ファイル・フォルダの上書きの場合
-
-
-
 
 	/*
 	ファイルパスをs.split("\\")で分けて配列に入れて、それを繰り返し表示する
@@ -260,18 +239,12 @@ public class FileController {
 	→フォルダ作成時に、フォルダ名に「.」があればエラーにするのがいいか
 	*/
 
-
-//	ファイル名(パスの最後だけなので、ファイル名でもフォルダ名でもOK)だけ検索正規表現
-//	→ Windowsは [^\\]+$
-//	→ Linuxは [^/]+$
-//
-//	フォルダ名だけ検索正規表現
-//	→ Windowsは ^.*\\
-//	→ Linuxは^.*/
-
-
-
-
-
+	//	ファイル名(パスの最後だけなので、ファイル名でもフォルダ名でもOK)だけ検索正規表現
+	//	→ Windowsは [^\\]+$
+	//	→ Linuxは [^/]+$
+	//
+	//	フォルダ名だけ検索正規表現
+	//	→ Windowsは ^.*\\
+	//	→ Linuxは^.*/
 
 }

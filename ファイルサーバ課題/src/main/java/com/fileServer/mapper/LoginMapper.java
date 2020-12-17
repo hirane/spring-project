@@ -8,5 +8,5 @@ import com.fileServer.entity.Users;
 public interface LoginMapper {
 
     //USERテーブルからユーザ名とパスワードを取得。
-    public Users findUsers(String name);
+    public Users findUsers(String userId);
 }

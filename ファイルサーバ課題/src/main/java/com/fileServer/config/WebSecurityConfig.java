@@ -17,7 +17,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 
 	@Autowired
     UserDetailsService userDetailsService;
-	
+
 	@Override
 	protected void configure(HttpSecurity http)throws Exception{
 		http.formLogin()
@@ -30,7 +30,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		    //ログインフォームのパスワード入力欄name
 		    .passwordParameter("password")
 		    //ログイン成功時の遷移先
-		    .defaultSuccessUrl("/")
+		    .defaultSuccessUrl("/fileView",true)
 		    //ログインページのアクセスは全員許可する
 		    .permitAll();
 
@@ -60,7 +60,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		PasswordEncoder passwordEncoder(){
 			return new BCryptPasswordEncoder();
 		}
-		
+
 		@Autowired
     	void configureAuthenticationManager(AuthenticationManagerBuilder auth) throws Exception {
         	auth.userDetailsService(userDetailsService)
