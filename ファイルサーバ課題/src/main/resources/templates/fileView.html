@@ -1,10 +1,140 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-<meta charset="UTF-8">
-<title>メインページ</title>
+	<meta charset="UTF-8">
+	<title>ファイルサーバ画面</title>
+	<link th:href="@{css/fileViewCss.css}" rel="stylesheet">
+	<link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
 </head>
+
 <body>
-メインページです。
+	<div class="contentsWrap">
+		<h1 class="heading">ファイルサーバー</h1>
+
+		<div class="container">
+			<!--/*左ボタン類*/-->
+			<div class="sideContents">
+				<!--/*ページ遷移関係ボタン類*/-->
+				<div class="move">
+					<!--/*WebSecurityConfigueの .logoutSuccessUrl("/hoeg") のパラメーターがth:actionに入る*/-->
+					<form th:action="@{/logout}" method="GET">
+						<input type="submit" name="toLogout" value="ログアウト">
+					</form>
+					<form th:action="@{/move}" method="GET">
+						<input type="submit" name="moveButton" value="ファイルサーバ">
+					</form>
+					<form th:action="@{/move}" method="GET">
+						<input type="submit" name="moveButton" value="ユーザ情報更新">
+					</form>
+					<!--/*マスタの場合のみ
+					<form th:if="${users.authority == 0}" th:action="@{/move}" method="GET">
+					*/-->
+					<!--/*ifを外した仮版*/-->
+					<form th:action="@{/move}" method="GET">
+						<input type="submit" name="moveButton" value="ユーザ管理">
+					</form>
+				</div>
+
+				<!--/*ファイルサーバ画面での動作ボタン類*/-->
+				<div class="func">
+					<!--/*マスタの場合のみ
+					<form th:if="${users.authority == 0 || users.authority == 1}" th:action="@{/upload}" method="POST" enctype="multipart/form-data">
+					*/-->
+					<!--/*ifを外した仮版*/-->
+					<form th:action="@{/upload}" name="uploadForm" method="POST" enctype="multipart/form-data">
+						<label><input class="hideBtn" type="file" name="multipartFile" multiple onchange="uploadFiles()">アップロード</label>
+						<!--/*type="hidden"でログインユーザ名の情報を送る*/-->
+					</form>
+					<!--/*複数ファイルの関連付けをどうするか*/-->
+					<!--/*チェックボックスでの、参考になるか？ https://casual-tech-note.hatenablog.com/entry/2018/10/24/234539 */-->
+					<form th:action="@{/download}" method="POST">
+						<button type="submit" name="downloadFile" th:value="*{fileId}">ダウンロード</button>
+					</form>
+					<!--/*マスタの場合のみ
+					<form th:if="${users.authority == 0 || users.authority == 1}" th:action="@{/makeDirectory}" method="POST">
+					*/-->
+					<!--/*ifを外した仮版*/-->
+					<form th:action="@{/makeDirectory}" method="POST">
+						<input type="submit" name="mkdir" value="フォルダ作成">
+					</form>
+				</div>
+			</div>
+
+
+			<!--/*フォルダ・ファイル一覧部分*/-->
+			<div class="mainContents">
+
+				<!--/*【未完成】階層構造表示*/-->
+				<div class="dirLevel">
+					<form th:action="@{/changeDirectory}">
+						<input type="submit" value="Top">
+						<!--/*以下については表示がイメージできてない状態です
+						<span th:each=""> > <input type="submit" value="@{パスの一番下のディレクトリ}"></span>
+						*/-->
+					</form>
+				</div>
+
+				<!--/*一覧部分*/-->
+				<div class="mainTable">
+					<table class="serverTable">
+						<tr>
+							<th class="th1"></th>
+							<th class="th2">名前</th>
+							<th class="th3">最終更新日</th>
+							<th class="th4">最終更新者</th>
+							<th class="th5"></th>
+							<th class="th6"></th>
+							<th class="th7"></th>
+							<th class="th8"></th>
+						</tr>
+						<tr th:each="file: ${files}" th:object="${file}">
+							<!--/*フォルダの時にはフォルダアイコン<i class="fas fa-folder"></i>*/-->
+							<!--/*ファイルの時にはファイルアイコン<i class="far fa-file"></i>*/-->
+							<td>icon</td>
+							<!--/*ファイル名しかfile_nameから使えない→フォルダ名はパスから切り抜くしかないのでは？*/-->
+							<td class="tdLeftAlign" th:text="*{fileName}"></td>
+							<!--/*更新日*/-->
+							<td class="tdLeftAlign" th:text="*{updateDate}"></td>
+							<!--/*更新者*/-->
+							<td class="tdLeftAlign" th:text="*{updateUser}"></td>
+							<!--/*フォルダ内すべてのダウンロード*/-->
+							<td>
+								<form th:action="@{/downloadDir}" method="POST">
+									<button type="submit" name="downloadDir" th:value="*{fileId}">ダウンロード</button>
+								</form>
+							</td>
+							<!--/*ファイル・フォルダ名変更→フォルダ名はパス名変更になるか？*/-->
+							<td>
+								<form th:action="@{/changeName}" method="POST">
+									<input type="submit" name="changeName" value="名称変更">
+								</form>
+							</td>
+							<!--/*ファイル・フォルダ移動→file_pathの更新*/-->
+							<td>
+								<form th:action="@{/moveDirectory}" method="POST">
+									<input type="submit" name="moveDirectory" value="移動">
+								</form>
+							</td>
+							<!--/*ファイル・フォルダ削除→テーブルのレコードだけでなくOIDも削除する必要あり→lo_unlink？*/-->
+							<td>
+								<form th:action="@{/delete}" method="POST">
+									<input type="submit" name="delete" value="削除">
+								</form>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<script>
+	const uploadFiles = () => {
+		document.uploadForm.submit();
+	}
+</script>
+
 </body>
+
 </html>

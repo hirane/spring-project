@@ -1,0 +1,46 @@
+package com.fileServer.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
+import com.fileServer.entity.FileData;
+
+@Mapper
+public interface FileMapper {
+
+	//テーブル内の全リストを検索する
+	@Select("SELECT file_id AS fileId, file_name AS fileName, file_obj AS fileObj, file_path AS filePath, "
+			+ "create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser "
+			+ "FROM files "
+			+ "ORDER BY file_name ASC;"
+			)
+	public List<FileData> findAll();
+
+	//filesテーブルの対象のIDのレコードを全データ取得
+	@Select("SELECT file_id AS fileId, file_name AS fileName, file_obj AS fileObj, file_path AS filePath, "
+			+ "create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser "
+			+ "FROM files "
+			+ "WHERE file_id = #{fileId};"
+			)
+	public FileData findById(long fileId);
+
+	//ファイルをテーブルに追加する
+	@Insert("INSERT INTO files "
+			+ "VALUES (#{fileId}, #{fileName}, #{fileObj}, #{filePath}, "
+			+ "#{createDate}, #{createUser}, #{updateDate}, #{updateUser});"
+			)
+	public void insert(FileData file);
+
+	//file_idの最大値取得
+	//file_idをSERIAL型にできなかったため、BIGINT型で設定したため
+	@Select("SELECT COALESCE(max(file_id), 0) AS maxId FROM files")
+	public Long getMaxId();
+
+//	レコードを削除する
+//	file_objを削除するメソッドも必要か
+//	public void deleteById(long fileId);
+
+}
