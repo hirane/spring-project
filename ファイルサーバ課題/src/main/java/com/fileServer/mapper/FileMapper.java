@@ -12,7 +12,7 @@ import com.fileServer.entity.FileData;
 public interface FileMapper {
 
 	//テーブル内の全リストを検索する
-	@Select("SELECT file_id AS fileId, file_name AS fileName, file_obj AS fileObj, file_path AS filePath, "
+	@Select("SELECT file_id AS fileId, file_name AS fileName, file_path AS filePath, "
 			+ "create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser "
 			+ "FROM files "
 			+ "ORDER BY file_name ASC;"
@@ -20,24 +20,28 @@ public interface FileMapper {
 	public List<FileData> findAll();
 
 	//filesテーブルの対象のIDのレコードを全データ取得
-	@Select("SELECT file_id AS fileId, file_name AS fileName, file_obj AS fileObj, file_path AS filePath, "
+	@Select("SELECT file_id AS fileId, file_name AS fileName, file_path AS filePath, "
 			+ "create_date AS createDate, create_user AS createUser, update_date AS updateDate, update_user AS updateUser "
 			+ "FROM files "
 			+ "WHERE file_id = #{fileId};"
 			)
-	public FileData findById(long fileId);
+	public FileData findById(int fileId);
 
 	//ファイルをテーブルに追加する
 	@Insert("INSERT INTO files "
-			+ "VALUES (#{fileId}, #{fileName}, #{fileObj}, #{filePath}, "
+			+ "VALUES (#{fileName}, #{filePath}, "
 			+ "#{createDate}, #{createUser}, #{updateDate}, #{updateUser});"
 			)
 	public void insert(FileData file);
 
+
+	//更新日と更新者を、file_pathから取得
+
+
 	//file_idの最大値取得
 	//file_idをSERIAL型にできなかったため、BIGINT型で設定したため
-	@Select("SELECT COALESCE(max(file_id), 0) AS maxId FROM files")
-	public Long getMaxId();
+//	@Select("SELECT COALESCE(max(file_id), 0) AS maxId FROM files")
+//	public Long getMaxId();
 
 //	レコードを削除する
 //	file_objを削除するメソッドも必要か

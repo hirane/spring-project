@@ -1,14 +1,15 @@
 package com.fileServer.controller;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -35,177 +36,177 @@ public class FileController {
 	@Autowired
 	//ファイルの検索に関するメソッドを参照する
 	FileMapper fileMapper;
-	//ユーザ情報検索に関するメソッドを参照する
-//	@Autowired
-//	private UserMapper userMapper;
-	//作成・更新者情報を自動で取得するため
-//	@Autowired
-//	private LoginMapper loginMapper;
+
+	//トップのファイル一覧画面
+	@SuppressWarnings("unused")
+	@PostMapping("/fileView")
+	@Transactional(readOnly=false)
+	//directoryPathとしてfilePathを受け取って、パラメーターがnullならホームディレクトリ表示
+	public String toMoveView(@RequestParam("directoryPath") String directoryPath, Model model) {
+//		ModelAndView mav = new ModelAndView();
+//		List<FileData> fileList = fileMapper.findAll();
+		//カレントディレクトリ(プロジェクトフォルダ)の絶対パス取得
+		String tmpPath = new File(".").getAbsoluteFile().getParent();
+		//カレントディレクトリのフォルダ一覧をlist変数へ
+		File[] metaList = new File(tmpPath).listFiles();
+		//「FileServer」というフォルダがなければ作成
+		File homeDirectory = null;
+		boolean isExist = false;
+		for(File ls: metaList) {
+			if(Arrays.toString(metaList).contains(tmpPath + "\\" + "FileServer")) {
+				isExist = true;
+				break;
+			}
+		}
+		if(isExist == false) {
+			homeDirectory = new File(tmpPath + "\\" + "FileServer");
+			homeDirectory.mkdir();
+		}
+
+		File[] dispList = null;
+		//他のディレクトリ一覧に遷移するとき
+		if(directoryPath != null) {
+			dispList = new File(directoryPath).listFiles();
+		} else {
+			//トップディレクトリを表示するとき
+			directoryPath = new File(tmpPath + "\\" + "FileServer").getAbsolutePath();
+			dispList = new File(directoryPath).listFiles();
+		}
+		//ファイル・フォルダまでのフルパスを保存
+//		List<File> path = new ArrayList<>();
+		//表示用のファイルの名前を保存
+//		List<String> dispName = new ArrayList<>();
+
+		//送るデータを格納
+		//dispList.lengthはファイル・フォルダの個数
+		FileData[] sendData = new FileData[dispList.length];
+		//表示用ファイルリスト
+		List<String> forDispFileName = new ArrayList<>();
+		//表示用フォルダリスト
+		List<String> forDispDirName = new ArrayList<>();
+		//フォルダ上、ファイル下でソートして表示したい
+		List<String> dispText = new ArrayList<>();
+		for(int i = 0; i < dispList.length; i++) {
+			//個別のファイルについて
+			FileData file = new FileData();
+			//パスの最後の\までのみとマッチさせる
+//			Matcher matcher = Pattern.compile("^.*\\\\").matcher(directoryPath);
+			//matcherを空白にして、パスの最後(ファイル名 or フォルダ名)のみ取得
+//			String lastStr = matcher.replaceAll("");
+			//パスの最後(ファイル名 or フォルダ名)のみ取得
+			String dispStr = dispList[i].getName();
+			//lastStrに.が含まれる場合は表示用ファイルリストに、含まれない場合は表示用フォルダリストにadd
+			if(dispStr.contains(".")) {
+				forDispFileName.add(dispStr);
+			} else {
+				forDispDirName.add(dispStr);
+			}
+			file.setFileName(dispStr);
+			file.setFilePath(directoryPath + "\\" + dispStr);
+
+			file.setUpdateDate(dispStr);
+
+			sendData[i] = file;
+		}
+
+//		mav.addObject("path", homeDirectory);
+		model.addAttribute("files", sendData);
+		return "fileView";
+	}
 
 
-	/* Mapping元のURL
-	/logout
-	 * → logoutメソッド？
-	/move *3
-	 * → ファイルサーバ画面へ
-	 * → ユーザ情報更新画面へ
-	 * → ユーザ管理画面へ
-	/upload
-	 * → ファイル単位とフォルダ全体
-	/download *2種
-	 * → ファイルを選択して、選択したものを全てダウンロード
-	 * → ディレクトリ内のファイルを全てダウンロード
-	/makeDirectory
-	 * → パスの追加
-	/changeDirectory
-	 * → 選択されたパスを一番下に持つ場所へ移動
-	/changeName
-	 * → パスの一番最後だけを上書き(パスの上書き)
-	/moveDirectory
-	 * → パスの上書き
-	/delete
-	 * → 削除のメソッド
-	 * → lo_unlinkなどをSQL側で使用か
-	*/
 
-
-	/*
-	 * パスについて、デフォルトでアップロードされる先がeclipseのワークフォルダのプロジェクトドルだ名の直下になっている
-	 * →ただし、エクスプローラーなどからは見えていないので、ファイル移動などの際にエクスプローラーを開いて選ばせる方法は不可か
-	 *
-	 * プロジェクトフォルダの直下を相対的なhomeディレクトリとみなす方法を要検討
-	 * String homePath = new File(".").getAbsoluteFile().getParent();
-	 * →homePathまでのパスを全て切り取ってディレクトリ名を"/"にして、以下を相対パスに変換して保存するのはどうか
-	 *
-	 * 上部ディレクトリ階層の "Top" = homePath
-	 * homePathを初期状態では一覧表示させているが、階層を作って、そこを一覧表示させる方法を検討する必要あり
-	 *
-	 *
-	 * */
-
-
-	//ログイン機能実装後削除します
+	@SuppressWarnings("unused")
 	@GetMapping("/fileView")
 	@Transactional(readOnly=false)
-	public ModelAndView toMoveView(Model model) {
-		ModelAndView mav = new ModelAndView();
-		List<FileData> fileList = fileMapper.findAll();
-		mav.addObject("files", fileList);
-		mav.setViewName("fileView");
-		return mav;
-	}
-
-
-	/*
-	//ファイルサーバ画面トップに移動
-	@GetMapping("/move")
-	public ModelAndView toMoveView(@RequestParam("moveButton") String fromWhere) {
-		ModelAndView mav = new ModelAndView();
-		List<FileData> fileList = fileMapper.findAll();
-//		 ファイルサーバ画面: 権限情報(authority)を取得するためユーザ情報にアクセス
-//		 ユーザ情報更新画面・ユーザ管理画面: ユーザ情報表示のため
-//		List<User> userList = fileMapper.findAll();
-		mav.addObject("files", fileList);
-//		mav.addObject("users", userList);
-		//どのボタンからのリクエスト化で遷移先の変更
-		if(fromWhere.equals("ファイルサーバ")) {
-			mav.setViewName("fileView");
-		} else if(fromWhere.equals("ユーザ情報更新")) {
-			mav.setViewName("account");
-		} else if(fromWhere.equals("ユーザ管理")) {
-			mav.setViewName("userList");
-		}
-		return mav;
-	}
-	*/
-
-
-	//ファイルのダウンロード → 複数個選択したときにどのように値を取るかは要検討
-	//仮で、ファイル横にダウンロードボタンをつけて個別ダウンロードにしています
-	/*
-	 * 複数ダウンロードの場合の案1
-	 * チェックボックスにチェックを入れるたびにコントローラに飛ばして、対象のidをListに入れて、
-	 * 左のダウンロードが押されたときにListの要素をループでダウンロードする処理をさせる
-	 *
-	 * */
-	@RequestMapping("/downloadDir")
-	@Transactional(readOnly = false)
-	public String download(@RequestParam("downloadDir") long id, HttpServletResponse response){
-		//ファイルのパスは、例えば「C:\\Users\\fujit\\GoogleDrive\\javaProject\\fileServer\\sampleExcel - コピー.xlsx」など
-		//ダウンロード対象のファイルデータを取得
-		FileData file = fileMapper.findById(id);
-
-		//レスポンスにダウンロードファイルの情報を設定
-		//バイナリー形式を指定
-		response.setContentType("application/octet-stream");
-		response.setHeader("Cache-Control", "private");
-		response.setHeader("Pragma", "");
-		//ダウンロード時のファイル名を指定
-		String fileName = "";
-		//半角スペースは+に置換されるので、半角をエンコードされない文字"\\*"に置換
-		String tmpName = file.getFileName();
-		Pattern tmpPattern = Pattern.compile(" ");
-		String tmpStr = tmpPattern.matcher(tmpName).replaceAll("\\*");
-		try {
-			fileName = URLEncoder.encode(tmpStr, "UTF-8");
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-		}
-		//仮に置いた"\\*"を半角スペースに戻す
-		Pattern replacePattern = Pattern.compile("\\*");
-		String downloadName = replacePattern.matcher(fileName).replaceAll(" ");
-		//ダウンロード時のファイル名に代入
-		response.setHeader("Content-Disposition","attachment;filename=" + downloadName);
-
-		//ダウンロードファイルへ出力
-		try{
-			OutputStream os = response.getOutputStream();
-			InputStream is = file.getFileObj();
-			byte[] buff = new byte[8192];
-			int len = 0;
-			//入力ストリームのバイトが終わりに達するまで取得し、出力ストリームに書き込む
-			//終わりに達したら-1を返す
-			while ((len = is.read(buff, 0, buff.length)) != -1) {
-				os.write(buff, 0, len);
+	//directoryPathとしてfilePathを受け取って、パラメーターがnullならホームディレクトリ表示
+	public String toHomeDirectory(Model model) {
+//		ModelAndView mav = new ModelAndView();
+//		List<FileData> fileList = fileMapper.findAll();
+		//カレントディレクトリ(プロジェクトフォルダ)の絶対パス取得
+		String tmpPath = new File(".").getAbsoluteFile().getParent();
+		//カレントディレクトリのフォルダ一覧をlist変数へ
+		File[] metaList = new File(tmpPath).listFiles();
+		//「FileServer」というフォルダがなければ作成
+		File homeDirectory = null;
+		boolean isExist = false;
+		for(File ls: metaList) {
+			if(Arrays.toString(metaList).contains(tmpPath + "\\" + "FileServer")) {
+				isExist = true;
+				break;
 			}
-			//バッファにためたデータを書き込む
-			os.flush();
-		}catch(Exception e){
-			System.err.println(e);
+		}
+		if(isExist == false) {
+			homeDirectory = new File(tmpPath + "\\" + "FileServer");
+			homeDirectory.mkdir();
 		}
 
-		//Responseを直接指定しているため、画面遷移先はnullを指定
-		return null;
+		File[] dispList = null;
+		//他のディレクトリ一覧に遷移するとき
+		String directoryPath = new File(tmpPath + "\\" + "FileServer").getAbsolutePath();
+		dispList = new File(directoryPath).listFiles();
+		//ファイル・フォルダまでのフルパスを保存
+//		List<File> path = new ArrayList<>();
+		//表示用のファイルの名前を保存
+//		List<String> dispName = new ArrayList<>();
+
+		//送るデータを格納
+		//dispList.lengthはファイル・フォルダの個数
+		FileData[] sendData = new FileData[dispList.length];
+		//表示用ファイルリスト
+		List<String> forDispFileName = new ArrayList<>();
+		//表示用フォルダリスト
+		List<String> forDispDirName = new ArrayList<>();
+		//フォルダ上、ファイル下でソートして表示したい
+		List<String> dispText = new ArrayList<>();
+		for(int i = 0; i < dispList.length; i++) {
+			//個別のファイルについて
+			FileData file = new FileData();
+			//パスの最後の\までのみとマッチさせる
+//			Matcher matcher = Pattern.compile("^.*\\\\").matcher(directoryPath);
+			//matcherを空白にして、パスの最後(ファイル名 or フォルダ名)のみ取得
+//			String lastStr = matcher.replaceAll("");
+			//パスの最後(ファイル名 or フォルダ名)のみ取得
+			String dispStr = dispList[i].getName();
+			//lastStrに.が含まれる場合は表示用ファイルリストに、含まれない場合は表示用フォルダリストにadd
+			if(dispStr.contains(".")) {
+				forDispFileName.add(dispStr);
+			} else {
+				forDispDirName.add(dispStr);
+			}
+			file.setFileName(dispStr);
+			file.setFilePath(directoryPath + "\\" + dispStr);
+
+			file.setUpdateDate(dispStr);
+
+			sendData[i] = file;
+		}
+
+//		mav.addObject("path", homeDirectory);
+		model.addAttribute("files", sendData);
+		return "fileView";
 	}
-
-
-
-	//フォルダのダウンロード
-//	@RequestMapping("/downloadDir")
-//	publilc String download(@RequestParam("downloadDir") String fileId, HttpServletResponse response) {
-//
-//	}
-
 
 
 	//ファイル・フォルダのアップロード(DBへのINSERT処理)
 	//アップロード時に、対応可能な拡張子のみ判断して、対象外のものはエラーではねるのがいいか
 	//→アップロード不可能なものが多いのでどうにかならないか。PDFくらいは可能にしたいが
 	@PostMapping("/upload")
-//	@RequestMapping(value = "/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Transactional(readOnly = false)
 	public ModelAndView upload(@RequestPart MultipartFile[] multipartFile, Model model,
 			@AuthenticationPrincipal DbUsersDetails loginUser) {
+		FileData fileData = new FileData();
 		//複数ファイルアップロード
-		for (MultipartFile file: multipartFile) {
-			FileData fileData = new FileData();
+		for (int i = 0; i < multipartFile.length; i++) {
 			//最大値IDを取得
 			long maxId = fileMapper.getMaxId();
 			//追加するデータを作成
 			fileData.setFileId(maxId + 1);
-			fileData.setFileName(file.getOriginalFilename());
+			//送られてきたファイル名が入るセット
+			fileData.setFileName(multipartFile[i].getOriginalFilename());
 			try{
-				fileData.setFileObj(file.getInputStream());
+				//ファイルのデータをバイナリーコードにする
+				fileData.setFileObj(multipartFile[i].getInputStream());
 			}catch(Exception e){
 				System.err.println(e);
 			}
@@ -219,40 +220,88 @@ public class FileController {
 			//ログインユーザのユーザ名を取得してセット
 			fileData.setCreateUser(loginUser.getusers().getUserName());
 			fileData.setUpdateUser(loginUser.getusers().getUserName());
-
-			/* カレントディレクトリの絶対パスにファイル名を付加している
-			String currentPath = new File(".").getAbsoluteFile().getParent();
-			fileData.setFilePath(currentPath + "\\" + file.getOriginalFilename());
-			*/
-
-			//ファイルのフルパス
-			//アクセスした時点でのパスをホームパスとする
-			String fullPath = new File(".").getAbsoluteFile().getParent() + "\\" + file.getOriginalFilename();
-			Pattern pattern = Pattern.compile("^.*\\\\");
-			//「/ファイル名.拡張子」の形を追加
-			String addedPath = pattern.matcher(fullPath).replaceAll("/");
-			fileData.setFilePath(addedPath);
-
+			//アップロードするディレクトリ取得(後ほどトップのディレクトリ名に変更する)
+			String uploadDir = new File(".").getAbsoluteFile().getParent();
+			//格納先ディレクトリ、ファイル名を指定してファイルオブジェクトを作成
+			File convFile = new File(uploadDir,multipartFile[i].getOriginalFilename());
+			try {
+				//上記指定の情報で実ファイル作成
+				convFile.createNewFile();
+				FileOutputStream os = new FileOutputStream(convFile);
+				//MultipartFileのByteを取得し、ファイルの中身を書き込み
+				os.write(multipartFile[i].getBytes());
+				os.close();
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+			//取得したディレクトリにファイル名を最後に追加したpath
+			uploadDir = uploadDir + "\\" + fileData.getFileName();
+			fileData.setFilePath(uploadDir);
 			//DBに1件追加
 			fileMapper.insert(fileData);
 		}
 		//更新したDBからファイルリストを生成しビューに表示
 		return toMoveView(model);
-
 	}
 
 
+	@RequestMapping("/downloadDir")
+	@Transactional(readOnly = false)
+	public String download(@RequestParam("downloadDir") String filePath, HttpServletResponse response) {
+		//ファイルのパスは、例えば「C:\\Users\\fujit\\GoogleDrive\\javaProject\\fileServer\\sampleExcel - コピー.xlsx」など
+		//ファイルパスはビューから取得
 
-	//ファイル・フォルダの上書きの場合
+		//読み込み、書き込み用オブジェクトを作成
+		InputStream is = null;
+		OutputStream os = null;
 
+		//ダウンロード対象のファイルオブジェクトを作成
+		File dlFileObj = new File(filePath);
 
+		//レスポンスにダウンロードファイルの情報を設定
+		//バイナリー形式を指定
+		response.setContentType("application/octet-stream");
+		response.setHeader("Cache-Control", "private");
+		response.setHeader("Pragma", "");
+		//ダウンロード時のファイル名を指定→※要エンコード
+		response.setHeader("Content-Disposition", "attachment;filename=\"" + dlFileObj.getName() + "\"");
 
+		try {
+			//対象ファイルが存在しない場合の処理
+			if (!(dlFileObj.exists())) {
+				System.out.println("ファイルが存在しません");
+				//ビューにメッセージを返す
+				return null;
+			}
 
-	/*
-	ファイルパスをs.split("\\")で分けて配列に入れて、それを繰り返し表示する
-	各要素でmatches("\.")==trueであればファイルの扱い
-	→フォルダ作成時に、フォルダ名に「.」があればエラーにするのがいいか
-	*/
+			//ダウンロードファイルへ出力
+			is = new FileInputStream(dlFileObj);
+			os = response.getOutputStream();
+			byte[] buff = new byte[8192];
+			int len = 0;
+			//入力ストリームのバイトが終わりに達するまで取得し、出力ストリームに書き込む
+			//終わりに達したら-1を返す
+			while ((len = is.read(buff, 0, buff.length)) != -1) {
+				os.write(buff, 0, len);
+			}
+			//バッファにためたデータを書き込む
+			os.flush();
+
+		} catch (Exception e) {
+			System.err.println(e);
+		} finally {
+			try {
+				//クローズ処理
+				is.close();
+				os.close();
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+		}
+		//Responseを直接指定しているため、画面遷移先はnullを指定
+		return null;
+	}
+
 
 
 //	ファイル名(パスの最後だけなので、ファイル名でもフォルダ名でもOK)だけ検索正規表現
@@ -262,7 +311,6 @@ public class FileController {
 //	フォルダ名だけ検索正規表現
 //	→ Windowsは ^.*\\
 //	→ Linuxは^.*/
-
 
 
 }

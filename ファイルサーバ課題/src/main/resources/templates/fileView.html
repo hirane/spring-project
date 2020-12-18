@@ -21,17 +21,17 @@
 					<form th:action="@{/logout}" method="GET">
 						<input type="submit" name="toLogout" value="ログアウト">
 					</form>
-					<form th:action="@{/move}" method="GET">
+					<form th:action="@{/fileView}" method="GET">
 						<input type="submit" name="moveButton" value="ファイルサーバ">
 					</form>
-					<form th:action="@{/move}" method="GET">
+					<form th:action="@{/updateUser}" method="GET">
 						<input type="submit" name="moveButton" value="ユーザ情報更新">
 					</form>
 					<!--/*マスタの場合のみ
 					<form th:if="${users.authority == 0}" th:action="@{/move}" method="GET">
 					*/-->
 					<!--/*ifを外した仮版*/-->
-					<form th:action="@{/move}" method="GET">
+					<form th:action="@{/userList}" method="GET">
 						<input type="submit" name="moveButton" value="ユーザ管理">
 					</form>
 				</div>
@@ -49,7 +49,7 @@
 					<!--/*複数ファイルの関連付けをどうするか*/-->
 					<!--/*チェックボックスでの、参考になるか？ https://casual-tech-note.hatenablog.com/entry/2018/10/24/234539 */-->
 					<form th:action="@{/download}" method="POST">
-						<button type="submit" name="downloadFile" th:value="*{fileId}">ダウンロード</button>
+						<button type="submit" name="downloadFile" th:value="*{filePath}">ダウンロード</button>
 					</form>
 					<!--/*マスタの場合のみ
 					<form th:if="${users.authority == 0 || users.authority == 1}" th:action="@{/makeDirectory}" method="POST">
@@ -93,7 +93,11 @@
 							<!--/*ファイルの時にはファイルアイコン<i class="far fa-file"></i>*/-->
 							<td>icon</td>
 							<!--/*ファイル名しかfile_nameから使えない→フォルダ名はパスから切り抜くしかないのでは？*/-->
-							<td class="tdLeftAlign" th:text="*{fileName}"></td>
+							<td class="tdLeftAlign">
+								<form th:action="@{/fileView}" method="POST">
+									<button type="submit" name="directoryPath" th:value="*{filePath}" th:text="*{fileName}"></button>
+								</form>
+							</td>
 							<!--/*更新日*/-->
 							<td class="tdLeftAlign" th:text="*{updateDate}"></td>
 							<!--/*更新者*/-->
@@ -101,7 +105,7 @@
 							<!--/*フォルダ内すべてのダウンロード*/-->
 							<td>
 								<form th:action="@{/downloadDir}" method="POST">
-									<button type="submit" name="downloadDir" th:value="*{fileId}">ダウンロード</button>
+									<button type="submit" name="downloadDir" th:value="*{filePath}">ダウンロード</button>
 								</form>
 							</td>
 							<!--/*ファイル・フォルダ名変更→フォルダ名はパス名変更になるか？*/-->
