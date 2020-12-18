@@ -21,6 +21,15 @@ public interface UserMapper {
 	public List<Users> findAll();
 
 	/**
+	 * ユーザIDをきーにユーザ情報を取得
+	 * @param userId
+	 * @return
+	 */
+	@Select("SELECT user_id as userId, user_name as userName, password, authority FROM users WHERE user_id=#{userId}")
+	public Users findById(String userId);
+
+
+	/**
 	 * 新規ユーザ登録
 	 */
 	@Insert("INSERT INTO users ( user_id, user_name, password, authority ) "

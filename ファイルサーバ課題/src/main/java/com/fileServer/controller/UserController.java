@@ -3,9 +3,9 @@ package com.fileServer.controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -144,13 +144,9 @@ public class UserController {
 	 */
 	@GetMapping("/updateUser")
 	//セッションからログインユーザ情報を取得しUserインスタンスをビューに返す
-	//ログイン認証機能実装後に調整
-	/*public ModelAndView showUserUpdate(@AuthenticationPrincipal User loginUser, ModelAndView mav){*/
-	public ModelAndView showUserUpdate(ModelAndView mav) {
-		//更新完了通知表示用(非表示)
-		Users loginUser = new Users();
-		loginUser.setUserId("a@a");
-		loginUser.setUserName("aaa");
+	public ModelAndView showUserUpdate(@AuthenticationPrincipal User sessionUser, ModelAndView mav) {
+		//セッションのユーザIDをキーにログインユーザ情報を取得
+		Users loginUser = userService.findById(sessionUser.getUsername());
 		mav.addObject("loginUser", loginUser);
 		mav.setViewName("account");
 		return mav;
@@ -164,7 +160,7 @@ public class UserController {
 	 * @return
 	 */
 	@PostMapping("/updateName")
-	public ModelAndView updateUserName(@RequestParam("userName") String newName, HttpSession session,
+	public ModelAndView updateUserName(@RequestParam("userName") String newName, @AuthenticationPrincipal User sessionUser,
 			ModelAndView mav) {
 		//更新完了通知表示用(非表示)
 		mav.addObject("isUpdated", false);
@@ -173,16 +169,15 @@ public class UserController {
 		if (userService.isDuplicatedUserName(newName)) {
 			mav.addObject("isErr", true);
 			mav.addObject("errMsg", "このユーザ名は既に使用されています");
-			return showUserUpdate(mav);
+			return showUserUpdate(sessionUser,mav);
 		}
 		//ログインユーザのIDをセッションから取得
-		/*String userId = session.getUserId();*/
-		String userId = "a@a";
+		String userId = sessionUser.getUsername();
 		//変更対象IDと変更後ユーザ名をUpdateNameメソッドに渡す
 		userService.updateName(newName, userId);
 		//更新完了通知表示用(表示)
 		mav.addObject("isUpdated", true);
-		return showUserUpdate(mav);
+		return showUserUpdate(sessionUser,mav);
 	}
 
 	/**
@@ -195,7 +190,7 @@ public class UserController {
 	 */
 	@PostMapping("/updatePassword")
 	public ModelAndView updatePassword(@RequestParam("password") String newPassword,
-			@RequestParam("conPassword") String newConPassword, HttpSession session, ModelAndView mav) {
+			@RequestParam("conPassword") String newConPassword,@AuthenticationPrincipal User sessionUser, ModelAndView mav) {
 		//パスワードと確認パスワードの入力一致チェック
 		//一致しない場合
 		if (!(userService.conPasswordCheck(newPassword, newConPassword))) {
@@ -203,16 +198,15 @@ public class UserController {
 			mav.addObject("errMsg", "パスワードが一致しません");
 			//更新完了通知表示用(非表示)
 			mav.addObject("isUpdated", false);
-			return showUserUpdate(mav);
+			return showUserUpdate(sessionUser,mav);
 		}
 		//ログインユーザのIDをセッションから取得
-		/*String userId = session.getUserId();*/
-		String userId = "a@a";
+		String userId = sessionUser.getUsername();
 		//変更対象IDと変更後ユーザ名をUpdateNameメソッドに渡す
 		userService.updatePassword(newPassword, userId);
 		//更新完了通知表示用(表示)
 		mav.addObject("isUpdated", true);
-		return showUserUpdate(mav);
+		return showUserUpdate(sessionUser,mav);
 	}
 
 	//ーーーーーーーーーーーーーファイル表示画面ーーーーーーーーーーーーーーーーー

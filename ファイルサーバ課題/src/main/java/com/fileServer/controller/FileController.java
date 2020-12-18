@@ -3,14 +3,17 @@ package com.fileServer.controller;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.fileServer.entity.DbUsersDetails;
 import com.fileServer.entity.FileData;
 import com.fileServer.mapper.FileMapper;
 
@@ -32,11 +36,12 @@ public class FileController {
 	//ファイルの検索に関するメソッドを参照する
 	FileMapper fileMapper;
 	//ユーザ情報検索に関するメソッドを参照する
-	//	@Autowired
-	//	private UserMapper userMapper;
+//	@Autowired
+//	private UserMapper userMapper;
 	//作成・更新者情報を自動で取得するため
-	//	@Autowired
-	//	private LoginMapper loginMapper;
+//	@Autowired
+//	private LoginMapper loginMapper;
+
 
 	/* Mapping元のURL
 	/logout
@@ -63,6 +68,7 @@ public class FileController {
 	 * → lo_unlinkなどをSQL側で使用か
 	*/
 
+
 	/*
 	 * パスについて、デフォルトでアップロードされる先がeclipseのワークフォルダのプロジェクトドルだ名の直下になっている
 	 * →ただし、エクスプローラーなどからは見えていないので、ファイル移動などの際にエクスプローラーを開いて選ばせる方法は不可か
@@ -77,42 +83,42 @@ public class FileController {
 	 *
 	 * */
 
+
 	//ログイン機能実装後削除します
 	@GetMapping("/fileView")
-	@Transactional(readOnly = false)
+	@Transactional(readOnly=false)
 	public ModelAndView toMoveView(Model model) {
 		ModelAndView mav = new ModelAndView();
 		List<FileData> fileList = fileMapper.findAll();
 		mav.addObject("files", fileList);
 		mav.setViewName("fileView");
-		//		model.addAttribute("files", fileList);
 		return mav;
-		//		return "fileView";
 	}
 
-	/*ページ遷移系検討途中
-		//ファイルサーバ画面トップに移動
-		@GetMapping("/move")
-		public ModelAndView toMoveView(@RequestParam("moveButton") String fromWhere) {
-			ModelAndView mav = new ModelAndView();
-			List<FileData> fileList = fileMapper.findAll();
 
-			 * ファイルサーバ画面: 権限情報(authority)を取得するためユーザ情報にアクセス
-			 * ユーザ情報更新画面・ユーザ管理画面: ユーザ情報表示のため
+	/*
+	//ファイルサーバ画面トップに移動
+	@GetMapping("/move")
+	public ModelAndView toMoveView(@RequestParam("moveButton") String fromWhere) {
+		ModelAndView mav = new ModelAndView();
+		List<FileData> fileList = fileMapper.findAll();
+//		 ファイルサーバ画面: 権限情報(authority)を取得するためユーザ情報にアクセス
+//		 ユーザ情報更新画面・ユーザ管理画面: ユーザ情報表示のため
+//		List<User> userList = fileMapper.findAll();
+		mav.addObject("files", fileList);
+//		mav.addObject("users", userList);
+		//どのボタンからのリクエスト化で遷移先の変更
+		if(fromWhere.equals("ファイルサーバ")) {
+			mav.setViewName("fileView");
+		} else if(fromWhere.equals("ユーザ情報更新")) {
+			mav.setViewName("account");
+		} else if(fromWhere.equals("ユーザ管理")) {
+			mav.setViewName("userList");
+		}
+		return mav;
+	}
+	*/
 
-	//		List<User> userList = fileMapper.findAll();
-			mav.addObject("files", fileList);
-	//		mav.addObject("users", userList);
-			//どのボタンからのリクエスト化で遷移先の変更
-			if(fromWhere.equals("ファイルサーバ")) {
-				mav.setViewName("fileView");
-			} else if(fromWhere.equals("ユーザ情報更新")) {
-				mav.setViewName("account");
-			} else if(fromWhere.equals("ユーザ管理")) {
-				mav.setViewName("userList");
-			}
-			return mav;
-		}*/
 
 	//ファイルのダウンロード → 複数個選択したときにどのように値を取るかは要検討
 	//仮で、ファイル横にダウンロードボタンをつけて個別ダウンロードにしています
@@ -124,14 +130,10 @@ public class FileController {
 	 * */
 	@RequestMapping("/downloadDir")
 	@Transactional(readOnly = false)
-	public String download(@RequestParam("downloadDir") long id, HttpServletResponse response) {
+	public String download(@RequestParam("downloadDir") long id, HttpServletResponse response){
 		//ファイルのパスは、例えば「C:\\Users\\fujit\\GoogleDrive\\javaProject\\fileServer\\sampleExcel - コピー.xlsx」など
 		//ダウンロード対象のファイルデータを取得
 		FileData file = fileMapper.findById(id);
-
-		//ファイルの絶対パス取得
-		File path = new File(file.getFileName());
-		String absFilePath = path.getAbsolutePath();
 
 		//レスポンスにダウンロードファイルの情報を設定
 		//バイナリー形式を指定
@@ -139,11 +141,24 @@ public class FileController {
 		response.setHeader("Cache-Control", "private");
 		response.setHeader("Pragma", "");
 		//ダウンロード時のファイル名を指定
-		//→現状のままだとスペースがあった場合に+が挿入されてしまっている
-		response.setHeader("Content-Disposition", "attachment;filename=\"" + getFileName(absFilePath) + "\"");
+		String fileName = "";
+		//半角スペースは+に置換されるので、半角をエンコードされない文字"\\*"に置換
+		String tmpName = file.getFileName();
+		Pattern tmpPattern = Pattern.compile(" ");
+		String tmpStr = tmpPattern.matcher(tmpName).replaceAll("\\*");
+		try {
+			fileName = URLEncoder.encode(tmpStr, "UTF-8");
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
+		//仮に置いた"\\*"を半角スペースに戻す
+		Pattern replacePattern = Pattern.compile("\\*");
+		String downloadName = replacePattern.matcher(fileName).replaceAll(" ");
+		//ダウンロード時のファイル名に代入
+		response.setHeader("Content-Disposition","attachment;filename=" + downloadName);
 
 		//ダウンロードファイルへ出力
-		try {
+		try{
 			OutputStream os = response.getOutputStream();
 			InputStream is = file.getFileObj();
 			byte[] buff = new byte[8192];
@@ -155,7 +170,7 @@ public class FileController {
 			}
 			//バッファにためたデータを書き込む
 			os.flush();
-		} catch (Exception e) {
+		}catch(Exception e){
 			System.err.println(e);
 		}
 
@@ -163,46 +178,35 @@ public class FileController {
 		return null;
 	}
 
-	//ダウンロード時のファイル名をパスから取得
-	private String getFileName(String filePath) {
-		String fileName = "";
-		if (filePath != null && !"".equals(filePath)) {
-			try {
-				//ファイル名をUTF-8でエンコードして指定
-				fileName = URLEncoder.encode(new File(filePath).getName(), "UTF-8");
-			} catch (Exception e) {
-				System.err.println(e);
-				return "";
-			}
-		}
-		return fileName;
-	}
+
 
 	//フォルダのダウンロード
-	//	@RequestMapping("/downloadDir")
-	//	publilc String download(@RequestParam("downloadDir") String fileId, HttpServletResponse response) {
-	//
-	//	}
+//	@RequestMapping("/downloadDir")
+//	publilc String download(@RequestParam("downloadDir") String fileId, HttpServletResponse response) {
+//
+//	}
+
+
 
 	//ファイル・フォルダのアップロード(DBへのINSERT処理)
 	//アップロード時に、対応可能な拡張子のみ判断して、対象外のものはエラーではねるのがいいか
 	//→アップロード不可能なものが多いのでどうにかならないか。PDFくらいは可能にしたいが
 	@PostMapping("/upload")
-	//	@RequestMapping(value = "/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//	@RequestMapping(value = "/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Transactional(readOnly = false)
-	public ModelAndView upload(@RequestPart MultipartFile[] multipartFile,
-			Model model/*,
-						@AuthenticationPrincipal DbUsersDetails loginUser*/) {
-		for (MultipartFile file : multipartFile) {
+	public ModelAndView upload(@RequestPart MultipartFile[] multipartFile, Model model,
+			@AuthenticationPrincipal DbUsersDetails loginUser) {
+		//複数ファイルアップロード
+		for (MultipartFile file: multipartFile) {
 			FileData fileData = new FileData();
 			//最大値IDを取得
 			long maxId = fileMapper.getMaxId();
 			//追加するデータを作成
 			fileData.setFileId(maxId + 1);
 			fileData.setFileName(file.getOriginalFilename());
-			try {
+			try{
 				fileData.setFileObj(file.getInputStream());
-			} catch (Exception e) {
+			}catch(Exception e){
 				System.err.println(e);
 			}
 			//現在の日時を取得
@@ -212,16 +216,22 @@ public class FileController {
 			//作成日と更新日をセット
 			fileData.setCreateDate(now);
 			fileData.setUpdateDate(now);
-			/* ログインユーザのユーザ名をセット
-			fileData.setCreateUser(loginUser.getUserName());
-			fileData.setUpdateUser(loginUser.getUserName());
-			*/
-			//以下2行、仮で設定
-			fileData.setCreateUser("作成者テスト");
-			fileData.setUpdateUser("更新者テスト");
+			//ログインユーザのユーザ名を取得してセット
+			fileData.setCreateUser(loginUser.getusers().getUserName());
+			fileData.setUpdateUser(loginUser.getusers().getUserName());
 
+			/* カレントディレクトリの絶対パスにファイル名を付加している
 			String currentPath = new File(".").getAbsoluteFile().getParent();
 			fileData.setFilePath(currentPath + "\\" + file.getOriginalFilename());
+			*/
+
+			//ファイルのフルパス
+			//アクセスした時点でのパスをホームパスとする
+			String fullPath = new File(".").getAbsoluteFile().getParent() + "\\" + file.getOriginalFilename();
+			Pattern pattern = Pattern.compile("^.*\\\\");
+			//「/ファイル名.拡張子」の形を追加
+			String addedPath = pattern.matcher(fullPath).replaceAll("/");
+			fileData.setFilePath(addedPath);
 
 			//DBに1件追加
 			fileMapper.insert(fileData);
@@ -231,7 +241,12 @@ public class FileController {
 
 	}
 
+
+
 	//ファイル・フォルダの上書きの場合
+
+
+
 
 	/*
 	ファイルパスをs.split("\\")で分けて配列に入れて、それを繰り返し表示する
@@ -239,12 +254,15 @@ public class FileController {
 	→フォルダ作成時に、フォルダ名に「.」があればエラーにするのがいいか
 	*/
 
-	//	ファイル名(パスの最後だけなので、ファイル名でもフォルダ名でもOK)だけ検索正規表現
-	//	→ Windowsは [^\\]+$
-	//	→ Linuxは [^/]+$
-	//
-	//	フォルダ名だけ検索正規表現
-	//	→ Windowsは ^.*\\
-	//	→ Linuxは^.*/
+
+//	ファイル名(パスの最後だけなので、ファイル名でもフォルダ名でもOK)だけ検索正規表現
+//	→ Windowsは [^\\]+$
+//	→ Linuxは [^/]+$
+//
+//	フォルダ名だけ検索正規表現
+//	→ Windowsは ^.*\\
+//	→ Linuxは^.*/
+
+
 
 }
