@@ -17,7 +17,7 @@
 			<div class="sideContents">
 				<!--/*ページ遷移関係ボタン類*/-->
 				<div class="move">
-					<!--/*WebSecurityConfigueの .logoutSuccessUrl("/hoeg") のパラメーターがth:actionに入る*/-->
+					<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
 					<form th:action="@{/logout}" method="GET">
 						<input type="submit" name="toLogout" value="ログアウト">
 					</form>
@@ -27,35 +27,30 @@
 					<form th:action="@{/updateUser}" method="GET">
 						<input type="submit" name="moveButton" value="ユーザ情報更新">
 					</form>
-					<!--/*マスタの場合のみ
-					<form th:if="${users.authority == 0}" th:action="@{/move}" method="GET">
-					*/-->
-					<!--/*ifを外した仮版*/-->
-					<form th:action="@{/userList}" method="GET">
+					<!--/*マスタの場合のみ*/-->
+					<form th:if="${userAuth} == 0" th:action="@{/userList}" method="GET">
 						<input type="submit" name="moveButton" value="ユーザ管理">
 					</form>
 				</div>
 
 				<!--/*ファイルサーバ画面での動作ボタン類*/-->
 				<div class="func">
-					<!--/*マスタの場合のみ
-					<form th:if="${users.authority == 0 || users.authority == 1}" th:action="@{/upload}" method="POST" enctype="multipart/form-data">
-					*/-->
-					<!--/*ifを外した仮版*/-->
-					<form th:action="@{/upload}" name="uploadForm" method="POST" enctype="multipart/form-data">
+					<!--/*マスタと更新者の場合のみ*/-->
+					<form th:if="not (${userAuth} == 2)" th:action="@{/upload}" name="uploadForm" method="POST" enctype="multipart/form-data">
 						<label><input class="hideBtn" type="file" name="multipartFile" multiple onchange="uploadFiles()">アップロード</label>
-						<!--/*type="hidden"でログインユーザ名の情報を送る*/-->
+						<input type="hidden" name="uploadFile" th:value="${currentPath}">
 					</form>
 					<!--/*複数ファイルの関連付けをどうするか*/-->
 					<!--/*チェックボックスでの、参考になるか？ https://casual-tech-note.hatenablog.com/entry/2018/10/24/234539 */-->
+
+					<!--/*いったんコメントアウト
 					<form th:action="@{/download}" method="POST">
-						<button type="submit" name="downloadFile" th:value="*{filePath}">ダウンロード</button>
+						<button type="submit" name="downloadFile" th:value="${filePath}">ダウンロード</button>
 					</form>
-					<!--/*マスタの場合のみ
-					<form th:if="${users.authority == 0 || users.authority == 1}" th:action="@{/makeDirectory}" method="POST">
 					*/-->
-					<!--/*ifを外した仮版*/-->
-					<form th:action="@{/makeDirectory}" method="POST">
+
+					<!--/*マスタと更新者の場合のみ*/-->
+					<form th:if="not (${userAuth} == 2)" th:action="@{/makeDirectory}" method="POST">
 						<input type="submit" name="mkdir" value="フォルダ作成">
 					</form>
 				</div>
@@ -67,11 +62,15 @@
 
 				<!--/*【未完成】階層構造表示*/-->
 				<div class="dirLevel">
-					<form th:action="@{/changeDirectory}">
-						<input type="submit" value="Top">
-						<!--/*以下については表示がイメージできてない状態です
-						<span th:each=""> > <input type="submit" value="@{パスの一番下のディレクトリ}"></span>
-						*/-->
+					<form th:action="@{/fileView}" method="POST">
+						<label class="label">
+							<input class="hideBtn" type="submit" name="directoryPath" th:value="${homeDirectory}">
+							<span>Top</span>
+						</label>
+						<span th:each="directoryLevel: ${directoryLevels}" th:object="${directoryLevel}"> > <label class="label">
+							<input class="hideBtn" type="submit" name="directoryPath" th:value="*{filePath}">
+							<span th:text="*{fileName}"></span>
+						</label></span>
 					</form>
 				</div>
 
@@ -84,19 +83,24 @@
 							<th class="th3">最終更新日</th>
 							<th class="th4">最終更新者</th>
 							<th class="th5"></th>
-							<th class="th6"></th>
-							<th class="th7"></th>
-							<th class="th8"></th>
+							<!--/*マスタと更新者の場合のみ*/-->
+							<th th:if="not (${userAuth} == 2)" class="th6"></th>
+							<th th:if="not (${userAuth} == 2)" class="th7"></th>
+							<th th:if="not (${userAuth} == 2)" class="th8"></th>
 						</tr>
-						<tr th:each="file: ${files}" th:object="${file}">
-							<!--/*フォルダの時にはフォルダアイコン<i class="fas fa-folder"></i>*/-->
-							<!--/*ファイルの時にはファイルアイコン<i class="far fa-file"></i>*/-->
-							<td>icon</td>
-							<!--/*ファイル名しかfile_nameから使えない→フォルダ名はパスから切り抜くしかないのでは？*/-->
+
+						<!--/*フォルダの一覧表示*/-->
+						<tr class="label" th:each="directory: ${directories}" th:object="${directory}">
+							<!--/*フォルダアイコン*/-->
+							<td><i class="fas fa-folder"></i></td>
+							<!--/*フォルダ名*/-->
 							<td class="tdLeftAlign">
-								<form th:action="@{/fileView}" method="POST">
-									<button type="submit" name="directoryPath" th:value="*{filePath}" th:text="*{fileName}"></button>
-								</form>
+								<label>
+									<form th:action="@{/fileView}" method="POST">
+										<input class="hideBtn" type="submit" name="directoryPath" th:value="*{filePath}">
+										<span th:text="*{fileName}"></span>
+									</form>
+								</label>
 							</td>
 							<!--/*更新日*/-->
 							<td class="tdLeftAlign" th:text="*{updateDate}"></td>
@@ -108,20 +112,51 @@
 									<button type="submit" name="downloadDir" th:value="*{filePath}">ダウンロード</button>
 								</form>
 							</td>
-							<!--/*ファイル・フォルダ名変更→フォルダ名はパス名変更になるか？*/-->
-							<td>
+							<!--/*マスタと更新者の場合のみ*/-->
+							<td th:if="not (${userAuth} == 2)">
 								<form th:action="@{/changeName}" method="POST">
 									<input type="submit" name="changeName" value="名称変更">
 								</form>
 							</td>
-							<!--/*ファイル・フォルダ移動→file_pathの更新*/-->
-							<td>
+							<td th:if="not (${userAuth} == 2)">
 								<form th:action="@{/moveDirectory}" method="POST">
 									<input type="submit" name="moveDirectory" value="移動">
 								</form>
 							</td>
-							<!--/*ファイル・フォルダ削除→テーブルのレコードだけでなくOIDも削除する必要あり→lo_unlink？*/-->
+							<td th:if="not (${userAuth} == 2)">
+								<form th:action="@{/delete}" method="POST">
+									<input type="submit" name="delete" value="削除">
+								</form>
+							</td>
+						</tr>
+
+						<!--/*ファイルの一覧表示*/-->
+						<tr class="label" th:each="file: ${files}" th:object="${file}">
+							<!--/*ファイルアイコン*/-->
+							<td><i class="far fa-file"></i></td>
+							<!--/*ファイル名*/-->
+							<td class="tdLeftAlign" th:text="*{fileName}"></td>
+							<!--/*更新日*/-->
+							<td class="tdLeftAlign" th:text="*{updateDate}"></td>
+							<!--/*更新者*/-->
+							<td class="tdLeftAlign" th:text="*{updateUser}"></td>
 							<td>
+								<form th:action="@{/download}" method="POST">
+									<button type="submit" name="download" th:value="*{filePath}">ダウンロード</button>
+								</form>
+							</td>
+							<!--/*マスタと更新者の場合のみ*/-->
+							<td th:if="not (${userAuth} == 2)">
+								<form th:action="@{/changeName}" method="POST">
+									<input type="submit" name="changeName" value="名称変更">
+								</form>
+							</td>
+							<td th:if="not (${userAuth} == 2)">
+								<form th:action="@{/moveDirectory}" method="POST">
+									<input type="submit" name="moveDirectory" value="移動">
+								</form>
+							</td>
+							<td th:if="not (${userAuth} == 2)">
 								<form th:action="@{/delete}" method="POST">
 									<input type="submit" name="delete" value="削除">
 								</form>

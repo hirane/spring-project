@@ -37,7 +37,10 @@ li {
 	list-style: none;
 }
 
-a {
+a,
+label,
+input,
+button {
 	text-decoration: none;
 	cursor: pointer;
 }
@@ -189,6 +192,10 @@ td {
 
 .hideBtn {
 	display: none;
+}
+
+.label:hover {
+	background-color: rgba(0, 255, 255, 0.2);
 }
 
 
