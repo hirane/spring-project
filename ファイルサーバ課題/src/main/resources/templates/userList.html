@@ -7,7 +7,25 @@
 <body>
 	<h2>ユーザ管理</h2>
 	<p th:if="${#lists.isEmpty(userlist)}">ユーザが登録されていません</p>
-      <table border="1">
+
+	<div class="move">
+		<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
+		<form th:action="@{/logout}" method="GET">
+			<input type="submit" name="toLogout" value="ログアウト">
+		</form>
+		<form th:action="@{/fileView}" method="GET">
+			<input type="submit" name="moveButton" value="ファイルサーバ">
+		</form>
+		<form th:action="@{/updateUser}" method="GET">
+			<input type="submit" name="moveButton" value="ユーザ情報更新">
+		</form>
+		<!--/*マスタの場合のみ*/-->
+		<form th:action="@{/userList}" method="GET">
+			<input type="submit" name="moveButton" value="ユーザ管理">
+		</form>
+	</div>
+
+	<table border="1">
         <tr>
             <th>ユーザID</th>
             <th>ユーザ名</th>
