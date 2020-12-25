@@ -126,16 +126,4 @@ public class UserService {
 		return true;
 	}
 
-	/**
-	 * 確認用パスワードの一致確認
-	 * @param password
-	 * @param conPassword
-	 * @return
-	 */
-	public boolean conPasswordCheck(String password, String conPassword) {
-		if (password.equals(conPassword)) {
-			return true;
-		}
-		return false;
-	}
 }

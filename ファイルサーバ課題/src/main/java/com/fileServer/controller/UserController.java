@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -34,9 +33,8 @@ public class UserController {
 	 * @return mav
 	 */
 	@GetMapping("/userList")
-	public ModelAndView showUserList(ModelAndView mav) throws UsernameNotFoundException {
+	public ModelAndView showUserList(ModelAndView mav){
 		List<Users> userlist = new ArrayList<Users>();
-		;
 		userlist = userService.findAll();
 		mav.addObject("userlist", userlist);
 		mav.setViewName("userList");
@@ -63,8 +61,9 @@ public class UserController {
 	 * @return userListページ
 	 */
 	@PostMapping("/delete")
-	public ModelAndView deleteUser(@RequestParam("deleteId") String deleteId, ModelAndView mav) {
+	public ModelAndView deleteUser(@RequestParam("deleteId") String deleteId) {
 		userService.delete(deleteId);
+		ModelAndView mav = new ModelAndView();
 		mav.addObject("successMsg", "削除しました");
 		return showUserList(mav);
 	}
@@ -92,7 +91,6 @@ public class UserController {
 	 * @return mav
 	 */
 	@PostMapping("/regist")
-	/*public ModelAndView userRegist(@ModelAttribute("userForm") @Validated(UserForm.All.class) UserForm userForm, BindingResult br, ModelAndView mav){*/
 	public ModelAndView userRegist(@ModelAttribute("userForm") @Validated UserForm userForm, BindingResult br,
 			ModelAndView mav) {
 		//登録完了メッセージ出力用(非表示)
@@ -121,7 +119,7 @@ public class UserController {
 
 		//パスワードと確認パスワードの入力一致チェック
 		//一致しない場合
-		if (!(userService.conPasswordCheck(userForm.getPassword(), userForm.getConPassword()))) {
+		if (!(userForm.getPassword().equals(userForm.getConPassword()))) {
 			mav.addObject("isErr", true);
 			mav.addObject("errMsg", "パスワードが一致しません");
 			return mav;
@@ -160,10 +158,17 @@ public class UserController {
 	 * @return
 	 */
 	@PostMapping("/updateName")
-	public ModelAndView updateUserName(@RequestParam("userName") String newName, @AuthenticationPrincipal User sessionUser,
+	public ModelAndView updateUserName(@RequestParam("newUserName") String newName,@RequestParam("oldUserName") String oldName, @AuthenticationPrincipal User sessionUser,
 			ModelAndView mav) {
 		//更新完了通知表示用(非表示)
 		mav.addObject("isUpdated", false);
+		//登録済みユーザ名と入力値が異なるかチェック
+		//変更がない場合
+		if(newName.equals(oldName)) {
+			mav.addObject("isErr", true);
+			mav.addObject("errMsg", "ユーザ名に変更がありません");
+			return showUserUpdate(sessionUser,mav);
+		}
 		//既存ユーザとの重複チェック
 		//ユーザ名が既に存在する場合
 		if (userService.isDuplicatedUserName(newName)) {
@@ -171,6 +176,17 @@ public class UserController {
 			mav.addObject("errMsg", "このユーザ名は既に使用されています");
 			return showUserUpdate(sessionUser,mav);
 		}
+		/*		//バリデーションチェック
+				if(br.hasErrors()){
+					mav.setViewName("account");
+					Users loginUser = new Users();
+					loginUser.setUserId(sessionUser.getUsername());
+					loginUser.setUserName(newName);
+					mav.addObject("loginUser",loginUser);
+					mav.setViewName("account");
+					return mav;
+				}*/
+
 		//ログインユーザのIDをセッションから取得
 		String userId = sessionUser.getUsername();
 		//変更対象IDと変更後ユーザ名をUpdateNameメソッドに渡す
@@ -189,15 +205,22 @@ public class UserController {
 	 * @return
 	 */
 	@PostMapping("/updatePassword")
-	public ModelAndView updatePassword(@RequestParam("password") String newPassword,
+	public ModelAndView updatePassword(@RequestParam("newPassword") String newPassword,@RequestParam("oldPassword") String oldPassword,
 			@RequestParam("conPassword") String newConPassword,@AuthenticationPrincipal User sessionUser, ModelAndView mav) {
 		//パスワードと確認パスワードの入力一致チェック
 		//一致しない場合
-		if (!(userService.conPasswordCheck(newPassword, newConPassword))) {
+		if (!(newPassword.equals(newConPassword))) {
 			mav.addObject("isErr", true);
 			mav.addObject("errMsg", "パスワードが一致しません");
 			//更新完了通知表示用(非表示)
 			mav.addObject("isUpdated", false);
+			return showUserUpdate(sessionUser,mav);
+		}
+		//登録済みユーザ名と入力値が異なるかチェック
+		//変更がない場合
+		if(newPassword.equals(oldPassword)) {
+			mav.addObject("isErr", true);
+			mav.addObject("errMsg", "パスワードに変更がありません");
 			return showUserUpdate(sessionUser,mav);
 		}
 		//ログインユーザのIDをセッションから取得
@@ -208,17 +231,4 @@ public class UserController {
 		mav.addObject("isUpdated", true);
 		return showUserUpdate(sessionUser,mav);
 	}
-
-	//ーーーーーーーーーーーーーファイル表示画面ーーーーーーーーーーーーーーーーー
-
-	/*FileControllerで処理しているため削除
-	 *     *//**
-			* 「/FileView」アクセス時：ファイル表示画面に遷移
-			* @param model
-			* @return
-			*//*
-				@GetMapping("/FileView")
-				public String showFileView(Model model){
-				return "fileView";
-				}*/
 }
