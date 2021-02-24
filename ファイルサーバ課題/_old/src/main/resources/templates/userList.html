@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>ユーザ管理</title>
+</head>
+<body>
+	<h2>ユーザ管理</h2>
+	<p th:if="${#lists.isEmpty(userlist)}">ユーザが登録されていません</p>
+
+	<div class="move">
+		<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
+		<form th:action="@{/logout}" method="GET">
+			<input type="submit" name="toLogout" value="ログアウト">
+		</form>
+		<form th:action="@{/fileView}" method="GET">
+			<input type="submit" name="moveButton" value="ファイルサーバ">
+		</form>
+		<form th:action="@{/updateUser}" method="GET">
+			<input type="submit" name="moveButton" value="ユーザ情報更新">
+		</form>
+		<!--/*マスタの場合のみ*/-->
+		<form th:action="@{/userList}" method="GET">
+			<input type="submit" name="moveButton" value="ユーザ管理">
+		</form>
+	</div>
+
+	<table border="1">
+        <tr>
+            <th>ユーザID</th>
+            <th>ユーザ名</th>
+            <th>権限</th>
+            <th></th>
+
+        </tr>
+        <tr th:each="list : ${userlist}" th:object="${list}">
+            <td th:text="*{userId}"></td>
+            <td th:text="*{userName}"></td>
+            <td>
+			  <form name="editAuthForm" method="POST" action="/editAuth">
+                <select th:if="*{authority}!=0" name="editAuth" onChange="submit(this.form)">
+                  <option th:value="1" th:selected="*{authority}==1">更新者</option>
+                  <option th:value="2" th:selected="*{authority}==2">閲覧者</option>
+                </select>
+                <span th:if="*{authority}==0">マスタ</span>
+                <input type="hidden" name="updateId" th:value="*{userId}">
+              </form>
+            </td>
+            <td>
+              <form name="deleteForm" method="POST" action="/delete">
+                <input th:if="*{authority}!=0" type="submit" value="削除" onClick="return confirm('ユーザを削除します。よろしいですか？')">
+                <input type="hidden" name="deleteId" th:value="*{userId}">
+			  </form>
+              <span th:if="*{authority}==0">ー</span>
+        	</td>
+        </tr>
+      </table>
+</body>
+</html>

@@ -3,57 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <title>ユーザ管理</title>
+<link th:href="@{/css/common.css}" rel="stylesheet">
+<link th:href="@{/css/userList.css}" rel="stylesheet">
 </head>
 <body>
-	<h2>ユーザ管理</h2>
-	<p th:if="${#lists.isEmpty(userlist)}">ユーザが登録されていません</p>
+	<div class="contentsWrap">
+		<h1 class="heading">ユーザ管理</h1>
+		<p th:if="${#lists.isEmpty(userlist)}">ユーザが登録されていません</p>
 
-	<div class="move">
-		<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
-		<form th:action="@{/logout}" method="GET">
-			<input type="submit" name="toLogout" value="ログアウト">
-		</form>
-		<form th:action="@{/fileView}" method="GET">
-			<input type="submit" name="moveButton" value="ファイルサーバ">
-		</form>
-		<form th:action="@{/updateUser}" method="GET">
-			<input type="submit" name="moveButton" value="ユーザ情報更新">
-		</form>
-		<!--/*マスタの場合のみ*/-->
-		<form th:action="@{/userList}" method="GET">
-			<input type="submit" name="moveButton" value="ユーザ管理">
-		</form>
+		<div class="container">
+			<!--/*左ボタン類*/-->
+			<div class="sideContents">
+				<!--/*ページ遷移関係ボタン類*/-->
+
+				<div class="move">
+					<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
+					<form th:action="@{/logout}" method="POST">
+						<input class="btn grayBtn smallBtn logoutBtn" type="submit" name="toLogout" value="ログアウト">
+					</form>
+					<form th:action="@{/fileView/top}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ファイルサーバ">
+					</form>
+					<form th:action="@{/updateUser}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ユーザ情報更新">
+					</form>
+					<!--/*マスタの場合のみ*/-->
+					<form th:if="${userAuth} == 0" th:action="@{/userList}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ユーザ管理">
+					</form>
+				</div>
+			</div>
+
+			<div class="mainContents">
+				<div class="mainTable">
+					<form name="userListForm" id="userForm" method="POST" action="">
+						<input class="hideBtn" type="hidden" name="userId" id="userId">
+						<input class="hideBtn" type="hidden" name="authority" id="editAuth">
+					</form>
+					<table class="userManagementTable">
+						<tr>
+							<th class="userIdCol">ユーザID</th>
+							<th class="userNameCol">ユーザ名</th>
+							<th class="userAuthCol">権限</th>
+							<th class="userDeleteCol"></th>
+
+						</tr>
+						<tr th:each="list : ${userlist}" th:object="${list}">
+							<td>
+								<p class="dispId" th:text="*{userId}"></p>
+							</td>
+							<td>
+								<p th:text="*{userName}"></p>
+							</td>
+							<td>
+								<span th:if="*{authority}==0">マスタ</span>
+								<select th:classappend="|*{authority==1 ? 'writable' : ''} *{authority==2 ? 'readable' : ''}|" th:if="*{authority}!=0"
+										th:onchange="changeUserAuth([[*{userId}]], this.value)">
+									<option th:value="1" th:selected="*{authority}==1">更新者</option>
+									<option th:value="2" th:selected="*{authority}==2">閲覧者</option>
+								</select>
+								<div class="errSmall" th:if="*{userId} == ${authTarget}" th:text="${errMsg}"></div>
+							</td>
+							<td>
+								<span th:if="*{authority}==0">―</span>
+								<input class="btn silverBtn smallerBtn1" type="button" th:if="*{authority}!=0" th:id="'delete' + *{userName}" value="削除" th:onclick="deleteUser([[*{userId}]], [[*{authority}]])">
+								<div class="errSmall" th:if="*{userId} == ${deleteTarget}" th:text="${errMsg}"></div>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
 	</div>
 
-	<table border="1">
-        <tr>
-            <th>ユーザID</th>
-            <th>ユーザ名</th>
-            <th>権限</th>
-            <th></th>
+	<script th:src="@{/js/userList.js}"></script>
 
-        </tr>
-        <tr th:each="list : ${userlist}" th:object="${list}">
-            <td th:text="*{userId}"></td>
-            <td th:text="*{userName}"></td>
-            <td>
-			  <form name="editAuthForm" method="POST" action="/editAuth">
-                <select th:if="*{authority}!=0" name="editAuth" onChange="submit(this.form)">
-                  <option th:value="1" th:selected="*{authority}==1">更新者</option>
-                  <option th:value="2" th:selected="*{authority}==2">閲覧者</option>
-                </select>
-                <span th:if="*{authority}==0">マスタ</span>
-                <input type="hidden" name="updateId" th:value="*{userId}">
-              </form>
-            </td>
-            <td>
-              <form name="deleteForm" method="POST" action="/delete">
-                <input th:if="*{authority}!=0" type="submit" value="削除" onClick="return confirm('ユーザを削除します。よろしいですか？')">
-                <input type="hidden" name="deleteId" th:value="*{userId}">
-			  </form>
-              <span th:if="*{authority}==0">ー</span>
-        	</td>
-        </tr>
-      </table>
 </body>
 </html>

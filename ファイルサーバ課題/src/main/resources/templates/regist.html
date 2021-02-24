@@ -1,54 +1,62 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>ユーザ登録</title>
-<style>
- .err{
- color:red;
- }
-</style>
+	<meta charset="UTF-8">
+	<title>ユーザ登録</title>
+	<link th:href="@{/css/common.css}" rel="stylesheet">
+	<link th:href="@{/css/loginAndRegist.css}" rel="stylesheet">
 </head>
+
 <body>
-  <p class="err" th:if="${isErr}" th:text="${errMsg}"></p>
+	<div class="contentsWrap">
+		<h1 class="heading">ユーザ登録</h1>
 
-  <form name="registForm" action="/regist" method="POST" th:object="${userForm}">
-    <ul>
-	  <li>
-        <label for="userId">ユーザID(メールアドレス)</label>
-        <div><input id="userId" type="email" name="userId" th:value="*{userId}" placeholder="E-Mail形式で半角英数字254文字以内"></div>
-        <div class="err" th:if="${#fields.hasErrors('userId')}" th:errors="*{userId}" th:errorclass="err" ></div>
-      </li>
+		<div class="mainContents">
+			<form name="registForm" id="registForm" method="POST" th:object="${userForm}">
+				<div class="inputArea">
+					<div class="label"><label for="userId">ユーザID(メールアドレス)</label></div>
+					<input type="email" th:field="*{userId}" placeholder="E-Mail形式で半角英数字254文字以内">
+					<div class="err" th:if="${#fields.hasErrors('userId')}" th:text="${errIdMsg}"></div>
+					<div class="err" th:if="${isUsedIdErr}" th:text="${errIdMsg}"></div>
+				</div>
 
-	  <li>
-        <label for="userName">ユーザ名</label>
-        <div><input id="userName" type="text" name="userName" th:value="*{userName}" placeholder="半角英数字32文字以内"></div>
-        <div class="err" th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}" th:errorclass="err" ></div>
-	  </li>
+				<div class="inputArea">
+					<div class="label"><label for="userName">ユーザ名</label></div>
+					<input type="text" th:field="*{userName}" placeholder="半角英数字32文字以内">
+					<div th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}" th:errorclass="err"></div>
+					<div class="err" th:if="${isUsedNameErr}" th:text="${errNameMsg}"></div>
+				</div>
 
-	  <li>
-        <label for="password">パスワード</label>
-        <div><input id="password" type="password" name="password" placeholder="半角英数字32文字以内"></div>
-        <div class="err" th:if="${#fields.hasErrors('password')}" th:errors="*{password}" th:errorclass="err" ></div>
-  	  </li>
+				<div class="inputArea">
+					<div class="label"><label for="password">パスワード</label></div>
+					<input type="password" th:field="*{password}" placeholder="半角英数字32文字以内">
+					<div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" th:errorclass="err"></div>
+					</div>
 
-	  <li>
-        <label for="conPassword">確認用パスワード</label>
-        <div><input id="conPassword" type="password" name="conPassword" placeholder="半角英数字32文字以内"></div>
-        <div class="err" th:if="${#fields.hasErrors('conPassword')}" th:errors="*{conPassword}" th:errorclass="err" ></div>
-     </li>
-   </ul>
-   <input type="button" value="戻る">
-   <input type="submit" value="登録">
-  </form>
+				<div class="inputArea">
+					<div class="label"><label for="conPassword">確認用パスワード</label></div>
+					<input type="password" th:field="*{conPassword}" placeholder="半角英数字32文字以内">
+					<div th:if="${#fields.hasErrors('conPassword')}" th:errors="*{conPassword}" th:errorclass="err"></div>
+					<div class="err" th:if="${isEqualPwErr}" th:text="${errPwMsg}"></div>
+				</div>
 
-  <script type="text/javascript" th:inline="javascript">
-    /* コントローラから登録完了フラグを取得してメッセージ出力 */
-    if(/*[[${isRegistered}]]*/){
-      alert("登録が完了しました。");
-      location.href = "http://localhost:8080/fileView";
-    }
-  </script>
+			 	<div class="btnWrap">
+	 				<input class="btn pinkBtn mediumBtn" type="button" id="backBtn" value="戻る">
+					<input class="btn pinkBtn mediumBtn" type="submit" id="registBtn" value="登録">
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script type="text/javascript" th:inline="javascript">
+		/* コントローラから登録完了フラグを取得してメッセージ出力 */
+		if(/*[[${isRegistered}]]*/){
+			alert("登録が完了しました。");
+			location.href = "/";
+		}
+
+	</script>
+	<script th:src="@{/js/regist.js}"></script>
 
 </body>
 </html>

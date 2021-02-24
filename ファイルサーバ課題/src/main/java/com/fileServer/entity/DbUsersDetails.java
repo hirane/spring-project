@@ -12,7 +12,7 @@ public class DbUsersDetails extends org.springframework.security.core.userdetail
     private final Users users;
 
     public DbUsersDetails(Users users,
-            Collection<GrantedAuthority> authorities) {
+    		Collection<? extends GrantedAuthority> authorities) {
 
         super(users.getUserId(), users.getPassword(),
                 true, true, true, true, authorities);
@@ -20,7 +20,7 @@ public class DbUsersDetails extends org.springframework.security.core.userdetail
         this.users = users;
     }
 
-    public Users getusers() {
+    public Users getUsers() {
         return users;
     }
 

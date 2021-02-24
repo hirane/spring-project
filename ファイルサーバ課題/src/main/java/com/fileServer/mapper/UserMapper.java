@@ -79,7 +79,7 @@ public interface UserMapper {
 	 * @param userId
 	 * @return
 	 */
-	@Select("SELECT COUNT(*) FROM users WHERE user_name=#{userName}")
-	public int findUserName(String userName);
+	@Select("SELECT EXISTS (SELECT user_name FROM users WHERE user_name = #{userName});")
+	public boolean findUserName(String userName);
 
 }

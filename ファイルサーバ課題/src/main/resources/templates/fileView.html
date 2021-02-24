@@ -2,14 +2,15 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-	<meta charset="UTF-8">
-	<title>ファイルサーバ画面</title>
-	<link th:href="@{css/fileViewCss.css}" rel="stylesheet">
-	<link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+<meta charset="UTF-8">
+<title>ファイルサーバ画面</title>
+<link th:href="@{/css/common.css}" rel="stylesheet">
+<link th:href="@{/css/fileView.css}" rel="stylesheet">
+<link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
 </head>
 
 <body>
-	<div class="contentsWrap">
+	<div class="contentsWrap" id="contentsWrap">
 		<h1 class="heading">ファイルサーバー</h1>
 
 		<div class="container">
@@ -18,64 +19,72 @@
 				<!--/*ページ遷移関係ボタン類*/-->
 				<div class="move">
 					<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
-					<form th:action="@{/logout}" method="GET">
-						<input type="submit" name="toLogout" value="ログアウト">
+					<form th:action="@{/logout}" method="POST">
+						<input class="btn grayBtn smallBtn logoutBtn" type="submit" name="toLogout" value="ログアウト">
 					</form>
-					<form th:action="@{/fileView}" method="GET">
-						<input type="submit" name="moveButton" value="ファイルサーバ">
+					<form th:action="@{/fileView/top}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ファイルサーバ">
 					</form>
-					<form th:action="@{/updateUser}" method="GET">
-						<input type="submit" name="moveButton" value="ユーザ情報更新">
+					<form th:action="@{/updateUser}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ユーザ情報更新">
 					</form>
 					<!--/*マスタの場合のみ*/-->
-					<form th:if="${userAuth} == 0" th:action="@{/userList}" method="GET">
-						<input type="submit" name="moveButton" value="ユーザ管理">
+					<form th:if="${fileForm.userAuth} == 0" th:action="@{/userList}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ユーザ管理">
 					</form>
 				</div>
 
 				<!--/*ファイルサーバ画面での動作ボタン類*/-->
 				<div class="func">
 					<!--/*マスタと更新者の場合のみ*/-->
-					<form th:if="not (${userAuth} == 2)" th:action="@{/upload}" name="uploadForm" method="POST" enctype="multipart/form-data">
-						<label><input class="hideBtn" type="file" name="multipartFile" multiple onchange="uploadFiles()">アップロード</label>
-						<input type="hidden" name="uploadFile" th:value="${currentPath}">
+					<form th:if="not (${fileForm.userAuth} == 2)" th:action="@{/upload}" name="uploadForm" method="POST" enctype="multipart/form-data">
+						<label class="btn pinkBtn smallBtn blockBtn" for="multipartFile">アップロード</label>
+						<input class="hideBtn" type="file" th:field="${httpForm.multipartFile}" multiple>
+						<input type="hidden" th:field="${fileForm.thisDirectoryPath}">
+						<input type="hidden" name="isExistSameName" id="isExistSameName">
 					</form>
-					<!--/*複数ファイルの関連付けをどうするか*/-->
-					<!--/*チェックボックスでの、参考になるか？ https://casual-tech-note.hatenablog.com/entry/2018/10/24/234539 */-->
 
-					<!--/*いったんコメントアウト
-					<form th:action="@{/download}" method="POST">
-						<button type="submit" name="downloadFile" th:value="${filePath}">ダウンロード</button>
+					<form th:action="@{/downloadMultiFiles}" name="downloadForm" id="downloadForm" method="POST">
+						<label class="btn pinkBtn smallBtn blockBtn" for="download">ダウンロード</label>
+						<input class="hideBtn" type="submit" id="download"> <!--/*name="downloadFilePathList" th:value="${filePath}"*/-->
+						<input type="hidden" th:field="*{fileForm.thisDirectoryPath}">
 					</form>
-					*/-->
 
 					<!--/*マスタと更新者の場合のみ*/-->
-					<form th:if="not (${userAuth} == 2)" th:action="@{/makeDirectory}" method="POST">
-						<input type="submit" name="mkdir" value="フォルダ作成">
-					</form>
+					<label th:if="not (${fileForm.userAuth} == 2)" class="btn pinkBtn smallBtn blockBtn" for="checkboxOfMkdir">フォルダ作成</label>
 				</div>
 			</div>
 
 
 			<!--/*フォルダ・ファイル一覧部分*/-->
-			<div class="mainContents">
+			<div class="mainContents" id="droppable">
 
-				<!--/*【未完成】階層構造表示*/-->
 				<div class="dirLevel">
 					<form th:action="@{/fileView}" method="POST">
-						<label class="label">
-							<input class="hideBtn" type="submit" name="directoryPath" th:value="${homeDirectory}">
-							<span>Top</span>
+						<label class="dirListLabel">
+						<input class="hideBtn" type="submit" name="thisDirectoryPath" th:value="${fileForm.homeDirectory}">
+						<span>Top</span>
 						</label>
-						<span th:each="directoryLevel: ${directoryLevels}" th:object="${directoryLevel}"> > <label class="label">
-							<input class="hideBtn" type="submit" name="directoryPath" th:value="*{filePath}">
-							<span th:text="*{fileName}"></span>
+						<span th:each="directoryLevel: ${fileForm.directoryLevels}" th:object="${directoryLevel}"> > <label class="dirListLabel">
+						<input class="hideBtn" type="submit" name="thisDirectoryPath" th:value="*{filePath}">
+						<span th:text="*{fileName}"></span>
 						</label></span>
 					</form>
 				</div>
 
+				<div th:if="${#fields.hasErrors('httpForm.multipartFile')} and ${multipartFileErr}" th:errors="${httpForm.multipartFile}" th:errorclass="err"></div>
+				<div th:if="${#fields.hasErrors('fileForm.downloadFilePath')} and ${downloadFilePathErr}" th:errors="${fileForm.downloadFilePath}" th:errorclass="err"></div>
+				<div th:if="${#fields.hasErrors('fileForm.downloadFilePathList')} and ${downloadFilePathListErr}" th:errors="${fileForm.downloadFilePathList}" th:errorclass="err"></div>
+				<div th:if="${#fields.hasErrors('fileForm.downloadDirectoryPath')} and ${downloadDirectoryPathErr}" th:errors="${fileForm.downloadDirectoryPath}" th:errorclass="err"></div>
+
+				<div th:if="${#fields.hasErrors('fileForm.thisDirectoryPath')} and ${thisDirectoryPathErr}" th:errors="${fileForm.thisDirectoryPath}" th:errorclass="err"></div>
+				<div th:if="${#fields.hasErrors('fileForm.renameTargetPath')} and ${renameTargetPathErr}" th:errors="${fileForm.renameTargetPath}" th:errorclass="err"></div>
+				<div th:if="${#fields.hasErrors('fileForm.departure')} and ${departureErr}" th:errors="${fileForm.departure}" th:errorclass="err"></div>
+				<div th:if="${#fields.hasErrors('fileForm.deleteTargetPath')} and ${deleteTargetPathErr}" th:errors="${fileForm.deleteTargetPath}" th:errorclass="err"></div>
+				<div th:if="${hasProcessErrors}" th:text="${processErrMsg}" class="err"></div>
+
 				<!--/*一覧部分*/-->
-				<div class="mainTable">
+				<div class="mainTable" th:object="${fileForm}">
 					<table class="serverTable">
 						<tr>
 							<th class="th1"></th>
@@ -84,94 +93,549 @@
 							<th class="th4">最終更新者</th>
 							<th class="th5"></th>
 							<!--/*マスタと更新者の場合のみ*/-->
-							<th th:if="not (${userAuth} == 2)" class="th6"></th>
-							<th th:if="not (${userAuth} == 2)" class="th7"></th>
-							<th th:if="not (${userAuth} == 2)" class="th8"></th>
+							<th th:if="not (${fileForm.userAuth} == 2)" class="th6"></th>
+							<th th:if="not (${fileForm.userAuth} == 2)" class="th7"></th>
+							<th th:if="not (${fileForm.userAuth} == 2)" class="th8"></th>
 						</tr>
 
 						<!--/*フォルダの一覧表示*/-->
-						<tr class="label" th:each="directory: ${directories}" th:object="${directory}">
+						<tr class="lineLabel" th:each="directory: *{forDispDirectoryNameList}" th:object="${directory}">
 							<!--/*フォルダアイコン*/-->
-							<td><i class="fas fa-folder"></i></td>
+							<td><label th:for="'directory' + *{fileId}"><div>
+										<i class="fas fa-folder"></i>
+									</div></label></td>
 							<!--/*フォルダ名*/-->
 							<td class="tdLeftAlign">
-								<label>
-									<form th:action="@{/fileView}" method="POST">
-										<input class="hideBtn" type="submit" name="directoryPath" th:value="*{filePath}">
-										<span th:text="*{fileName}"></span>
-									</form>
-								</label>
+								<div>
+									<label>
+										<form th:action="@{/fileView}" method="POST">
+											<input class="hideBtn" type="submit" name="thisDirectoryPath" th:id="'directory' + *{fileId}" th:value="*{filePath}">
+											<label th:for="'directory' + *{fileId}" th:text="*{fileName}"></label>
+										</form>
+									</label>
+								</div>
 							</td>
 							<!--/*更新日*/-->
-							<td class="tdLeftAlign" th:text="*{updateDate}"></td>
+							<td class="tdLeftAlign"><label th:for="'directory' + *{fileId}"><div>
+										<span th:text="*{updateDate}"></span>
+									</div></label></td>
 							<!--/*更新者*/-->
-							<td class="tdLeftAlign" th:text="*{updateUser}"></td>
+							<td class="tdLeftAlign"><label th:for="'directory' + *{fileId}"><div>
+										<span th:text="*{updateUser}"></span>
+									</div></label></td>
 							<!--/*フォルダ内すべてのダウンロード*/-->
 							<td>
-								<form th:action="@{/downloadDir}" method="POST">
-									<button type="submit" name="downloadDir" th:value="*{filePath}">ダウンロード</button>
+								<form th:action="@{/downloadDir}" method="POST" target="_blank">
+									<button class="btn silverBtn smallerBtn" type="submit" name="downloadDirectoryPath"
+											th:value="*{filePath}" onclick="dlDirectory(this.form)">ダウンロード</button>
+									<input type="hidden" th:field="${fileForm.thisDirectoryPath}">
 								</form>
 							</td>
 							<!--/*マスタと更新者の場合のみ*/-->
-							<td th:if="not (${userAuth} == 2)">
-								<form th:action="@{/changeName}" method="POST">
-									<input type="submit" name="changeName" value="名称変更">
-								</form>
+							<td th:if="not (${fileForm.userAuth} == 2)">
+								<label class="btn silverBtn smallerBtn1 blockBtn" th:for="'renameTargetDir' + *{fileId}">名称変更</label>
+								<input class="hideBtn" type="radio" th:id="'renameTargetDir' + *{fileId}"
+										th:value="*{filePath}" th:onclick="rename(this.value, [[*{fileName}]])">
 							</td>
-							<td th:if="not (${userAuth} == 2)">
-								<form th:action="@{/moveDirectory}" method="POST">
-									<input type="submit" name="moveDirectory" value="移動">
-								</form>
+							<td th:if="not (${fileForm.userAuth} == 2)">
+								<label class="btn silverBtn miniBtn blockBtn" th:for="'departureDir' + *{fileId}">移動</label>
+								<input class="hideBtn" type="radio" th:id="'departureDir' + *{fileId}" th:value="*{filePath}" onclick="dirMove(this.value)">
 							</td>
-							<td th:if="not (${userAuth} == 2)">
-								<form th:action="@{/delete}" method="POST">
-									<input type="submit" name="delete" value="削除">
-								</form>
+							<td th:if="not (${fileForm.userAuth} == 2)">
+								<label th:for="'deleteDir' + *{fileId}" class="btn silverBtn miniBtn blockBtn">削除</label>
+								<input class="hideBtn" type="submit" th:id="'deleteDir' + *{fileId}"
+										th:value="*{filePath}" th:onclick="deleteDirectory(this.value, [[*{fileName}]])">
 							</td>
 						</tr>
 
 						<!--/*ファイルの一覧表示*/-->
-						<tr class="label" th:each="file: ${files}" th:object="${file}">
+						<tr class="lineLabel" th:each="file: *{forDispFileNameList}" th:object="${file}">
 							<!--/*ファイルアイコン*/-->
-							<td><i class="far fa-file"></i></td>
+							<td><label th:for="'downloadFile' + *{fileId}"><div>
+										<i class="far fa-file"></i>
+									</div></label></td>
 							<!--/*ファイル名*/-->
-							<td class="tdLeftAlign" th:text="*{fileName}"></td>
+							<td class="tdLeftAlign">
+								<div class="checkedFiles">
+									<label th:for="'downloadFile' + *{fileId}">
+										<div>
+											<input class="hideBtn" type="checkbox" name="downloadFilePathList"
+													th:id="'downloadFile' + *{fileId}" th:value="*{filePath}" form="downloadForm">
+											<span class="hideBtn"><i class="far fa-check-square"></i></span>
+											<label th:for="'downloadFile' + *{fileId}" th:text="*{fileName}" class="fileNameLabel"></label>
+										</div>
+									</label>
+								</div>
+							</td>
 							<!--/*更新日*/-->
-							<td class="tdLeftAlign" th:text="*{updateDate}"></td>
+							<td class="tdLeftAlign">
+								<label th:for="'downloadFile' + *{fileId}">
+									<div>
+										<span th:text="*{updateDate}"></span>
+									</div>
+								</label>
+							</td>
 							<!--/*更新者*/-->
-							<td class="tdLeftAlign" th:text="*{updateUser}"></td>
+							<td class="tdLeftAlign">
+								<label th:for="'downloadFile' + *{fileId}">
+									<div>
+										<span th:text="*{updateUser}"></span>
+									</div>
+								</label>
+							</td>
 							<td>
 								<form th:action="@{/download}" method="POST">
-									<button type="submit" name="download" th:value="*{filePath}">ダウンロード</button>
+									<button class="btn silverBtn smallerBtn" type="submit" name="downloadFilePath" th:value="*{filePath}" onclick="dlFile(this.form)">ダウンロード</button>
+									<input type="hidden" th:field="${fileForm.thisDirectoryPath}">
 								</form>
 							</td>
 							<!--/*マスタと更新者の場合のみ*/-->
-							<td th:if="not (${userAuth} == 2)">
-								<form th:action="@{/changeName}" method="POST">
-									<input type="submit" name="changeName" value="名称変更">
-								</form>
+							<td th:if="not (${fileForm.userAuth} == 2)">
+									<label class="btn silverBtn smallerBtn1 blockBtn" th:for="'renameTargetFile' + *{fileId}">名称変更</label>
+									<input class="hideBtn" type="radio" th:id="'renameTargetFile' + *{fileId}"
+											th:value="*{filePath}" th:onclick="rename(this.value, [[*{fileName}]])">
 							</td>
-							<td th:if="not (${userAuth} == 2)">
-								<form th:action="@{/moveDirectory}" method="POST">
-									<input type="submit" name="moveDirectory" value="移動">
-								</form>
+							<td th:if="not (${fileForm.userAuth} == 2)">
+									<label class="btn silverBtn miniBtn blockBtn" th:for="'departureFile' + *{fileId}">移動</label>
+									<input class="hideBtn" type="radio" th:id="'departureFile' + *{fileId}" th:value="*{filePath}" onclick="dirMove(this.value)">
 							</td>
-							<td th:if="not (${userAuth} == 2)">
-								<form th:action="@{/delete}" method="POST">
-									<input type="submit" name="delete" value="削除">
-								</form>
+							<td th:if="not (${fileForm.userAuth} == 2)">
+								<label th:for="'deleteFile' + *{fileId}" class="btn silverBtn miniBtn blockBtn">削除</label>
+								<input class="hideBtn" type="submit" th:id="'deleteFile' + *{fileId}"
+										th:value="*{filePath}" th:onclick="deleteFile(this.value, [[*{fileName}]])">
 							</td>
 						</tr>
 					</table>
+					<form name="deleteForm" id="deleteForm" method="POST" th:action="@{/deleteFile}">
+						<input type="hidden" name="deleteTargetPath" id="deleteTarget">
+						<input type="hidden" th:field="*{thisDirectoryPath}">
+					</form>
 				</div>
 			</div>
 		</div>
-	</div>
 
-<script>
-	const uploadFiles = () => {
-		document.uploadForm.submit();
+
+		<!--/*新規フォルダ作成処理変更*/-->
+		<div class="popupWrap" th:object="${fileForm}">
+			<input id="checkboxOfMkdir" type="checkbox">
+			<div class="overlay">
+				<label for="checkboxOfMkdir" class="popupCloseRange"></label>
+				<div class="popupFieldText" th:classappend="${isRedisplayMkdir} ? 'popupFieldTextHasErrors'">
+					<label for="checkboxOfMkdir" class="popupCloseBtn">×</label>
+					<p class="heading">新しいフォルダを作成</p>
+
+					<div th:if="${isRedisplayMkdir}" id="mkdirErrMsgs">
+						<div th:if="${#fields.hasErrors('newDirectoryName')}" th:errors="*{newDirectoryName}" th:errorclass="err"></div>
+						<div th:if="${#fields.hasErrors('newDirectoryPath')}" th:errors="*{newDirectoryPath}" th:errorclass="err"></div>
+						<div class="err" th:if="${hasMkdirErr}" th:text="${errMsg}"></div>
+					</div>
+
+					<form class="popupContentsText" id="mkdirForm" name="mkdirForm" th:action="@{/makeDirectory}" method="POST">
+						<input id="mkdirTextValue" th:field="*{newDirectoryName}" type="text">
+						<button class="btn pinkBtn smallBtn" type="submit" id="popupMkdirSubmitBtn">作成</button>
+						<input type="hidden" id="mkdirThisDirectory" th:field="*{thisDirectoryPath}">
+						<input type="hidden" th:field="*{newDirectoryPath}">
+					</form>
+				</div>
+			</div>
+		</div>
+		<!--/*新規フォルダ作成処理以上*/-->
+
+
+		<!--/*名称変更*/-->
+		<div class="popupWrap" th:object="${fileForm}">
+			<input id="checkboxOfRename" type="checkbox">
+			<div class="overlay">
+				<label for="checkboxOfRename" class="popupCloseRange"></label>
+				<div class="popupFieldText" th:classappend="${isRedisplayRename} ? 'popupFieldTextHasErrors'">
+					<label for="checkboxOfRename" class="popupCloseBtn">×</label>
+					<p class="heading">名前を変更</p>
+
+					<div th:if="${isRedisplayRename}" id="renameErrMsgs">
+						<div th:if="${#fields.hasErrors('afterName')}" th:errors="*{afterName}" th:errorclass="err"></div>
+						<div th:if="${#fields.hasErrors('afterPath')}" th:errors="*{afterPath}" th:errorclass="err"></div>
+						<div class="err" th:if="${hasRenameErr}" th:text="${errMsg}"></div>
+					</div>
+
+					<form class="popupContentsText" name="changeNameForm" id="changeNameForm" th:action="@{/changeName}" method="POST">
+						<input id="renameTextValue" name="afterName" type="text">
+						<button class="btn pinkBtn smallBtn" type="submit" id="popupRenameSubmitBtn">変更</button>
+						<input type="hidden" id="renameThisDirectory" th:field="*{thisDirectoryPath}">
+						<input type="hidden" th:field="*{afterPath}">
+						<input type="hidden" th:field="*{renameTargetPath}">
+					</form>
+				</div>
+			</div>
+		</div>
+		<!--/*名称変更処理以上*/-->
+
+
+		<!--/*移動処理*/-->
+		<div class="popupWrap" th:object="${fileForm}">
+			<input id="checkboxOfRenameByMove" type="checkbox">
+			<div class="overlay">
+				<label for="checkboxOfRenameByMove" class="popupCloseRange"></label>
+				<div class="popupField">
+					<label for="checkboxOfRenameByMove" class="popupCloseBtn">×</label>
+					<p class="heading">移動先のフォルダを選択してください</p>
+
+					<div th:if="${isRedisplayMove}" id="moveErrMsgs">
+						<div th:if="${#fields.hasErrors('departure')}" th:errors="*{departure}" th:errorclass="err"></div>
+						<div th:if="${#fields.hasErrors('destination')}" th:errors="*{destination}" th:errorclass="err"></div>
+						<div th:if="${#fields.hasErrors('destinationFilePath')}" th:errors="*{destinationFilePath}" th:errorclass="err"></div>
+						<div class="err" th:if="${hasMoveErr}" th:text="${errMsg}"></div>
+					</div>
+
+					<form class="popupContents" id="renameByMoveForm" name="renameByMoveForm" th:action="@{/moveDirectory}" method="POST">
+						<!--/*フォルダ一覧ヘッダ部分*/-->
+						<div class="popupTableHead">
+							<table class="serverTable">
+								<tr>
+									<th class="popTblW1">移動先</th>
+									<th class="popTblW2">フォルダパス</th>
+								</tr>
+							</table>
+						</div>
+						<!--/*一覧部分*/-->
+						<div class="popupTable">
+							<table class="serverTable">
+								<!--/*フォルダの一覧表示*/-->
+								<tr class="linePopupLabel" th:each="list: *{allDirList}" th:object="${list}">
+									<!--/*フォルダ名*/-->
+									<td class="popTblW1">
+										<div>
+											<label th:for="'radioPath' + *{fileId}">
+												<div>
+													<input class="hideBtn" type="radio" th:id="'radioPath' + *{fileId}"
+															name="destination" th:value="*{filePath}" onclick="isCheckedRadio(this.value)">
+													<span class="hideBtn"><i class="far fa-check-square"></i></span>
+													<label th:for="'radioPath' + *{fileId}" th:text="*{fileName}"></label>
+													<button class="hideBtn" type="button" name="fileName" th:value="*{fileName}"></button>
+												</div>
+											</label>
+										</div>
+									</td>
+									<!--/*フォルダパス*/-->
+									<td class="popTblW2">
+										<div>
+											<label th:for="'radioPath' + *{fileId}" th:text="*{filePath}"></label>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</div>
+						<button class="btn pinkBtn smallBtn" type="submit" id="popupMoveSubmitBtn">ここへ移動</button>
+						<input type="hidden" th:field="*{departure}">
+						<input type="hidden" th:field="*{destinationFilePath}">
+						<input type="hidden" th:field="*{thisDirectoryPath}">
+					</form>
+				</div>
+			</div>
+		</div>
+		<!--/*移動処理以上*/-->
+
+	</div>
+	<!--/*contentsWrap*/-->
+
+
+	<script type="text/javascript" th:inline="javascript">
+	/*<![CDATA[*/
+	//ページ読み込み時に判断
+	window.addEventListener('load', (e) => {
+		if(/*[[${isRedisplayMkdir}]]*/) {
+			//document.getElementById('mkdirErrMsgs').classList.remove('hideBtn');
+			mkdir(/*[[${fileForm.newDirectoryName}]]*/, true);
+		} else if(/*[[${isRedisplayRename}]]*/) {
+			//document.getElementById('renameErrMsg').classList.remove('hideBtn');
+			rename(/*[[${fileForm.renameTargetPath}]]*/, /*[[${fileForm.afterName}]]*/);
+		} else if(/*[[${isRedisplayMove}]]*/) {
+			//document.getElementById('moveErrMsg').classList.remove('hideBtn');
+			dirMove(/*[[${fileForm.departure}]]*/);
+		}
+	});
+
+	//――――――――――――――――アップロード――――――――――――――――――――――――――――//
+
+	const multipartFile = document.getElementById('multipartFile');
+	const droppable = document.getElementById('droppable');
+	const contentsWrap = document.getElementById('contentsWrap');
+	const isValid = e => e.dataTransfer.types.indexOf('Files') >= 0;
+
+	//ボタンからファイルを選択してアップロードした場合、fileUpload関数へ
+	multipartFile.addEventListener('change', (e) => {
+		fileUpload();
+	});
+
+	//全体にドラッグオーバー禁止
+	contentsWrap.addEventListener('dragover', (e) => {
+		e.stopPropagation();
+		e.preventDefault();
+		e.dataTransfer.dropEffect = "none";return;
+	});
+
+	//範囲内にドラッグオーバー時に、範囲に着色
+	droppable.addEventListener('dragover', (e) => {
+		e.stopPropagation();
+		e.preventDefault();
+
+		if(!isValid(e)){
+			//無効なデータがドラッグされたらドロップを無効にする
+			e.dataTransfer.dropEffect = "none";return;
+		} else {
+			droppable.classList.add('dragOver');
+		}
+	});
+
+	//範囲外へドラッグ状態を抜ける
+	droppable.addEventListener('dragleave', (e) => {
+		e.stopPropagation();
+		e.preventDefault();
+		droppable.classList.remove('dragOver');
+	});
+
+	//ドロップしたときに、正常ファイルであればアップロードされる
+	//ファイルとフォルダを分けるために、一般的でないファイル形式で0バイトデータはアップロードできない仕様になっています
+	droppable.addEventListener('drop', (e) => {
+		e.stopPropagation();
+		e.preventDefault();
+		droppable.classList.remove('dragOver');
+		var files = e.dataTransfer.files
+		multipartFile.files = files;
+
+		let isIncludeDirectory = false;
+		//不明な(一般的でない)ファイル形式で0バイトデータの場合ははじく
+		for(let i = 0; i < files.length; i++) {
+			if((files[i].type == '' && files[i].size == 0) || files[i].type == '' || files[i].type == null) {
+				alert('対応していない形式が含まれています');
+				isIncludeDirectory = true;
+				break;
+			}
+		}
+		if(isIncludeDirectory == false) {
+			fileUpload();
+		}
+	});
+
+
+	//アップロード時の同名ファイル競合処理
+	//該当フォルダにあるファイル一覧の情報
+	const fileNameList = document.querySelectorAll('.fileNameLabel');
+//	window.addEventListener('DOMContentLoaded', function(e) {
+		//ファイルが選択されたときにイベント発火
+		//指定されたファイルを取得
+		const uploadFileList = document.querySelector('#multipartFile');
+		const fileUpload = () => {
+			//アップロードされたファイル数カウント
+			let uploadFileNum = 0;
+			//同名ファイル数カウント
+			let sameNameCount = 0;
+			//アップロードされたファイル数分ループ
+			while(document.querySelector('#multipartFile').files[uploadFileNum] != null) {
+				let input = uploadFileList.files[uploadFileNum];
+				//ファイル数分同名か確認
+				for(let j = 0; j < fileNameList.length; j++) {
+					if(input.name.toUpperCase() === fileNameList[j].textContent.toUpperCase()) {
+						sameNameCount++;
+						break;
+					}
+				}
+				uploadFileNum++;
+			} //while文ここまで
+
+			//同名ファイルが存在しなかった場合
+			if(sameNameCount == 0) {
+				//form送信
+				document.getElementById('isExistSameName').value = "notExist";
+				document.uploadForm.submit();
+			} else {
+				//同名ファイルが存在するが、上書きする場合
+				if(confirm(sameNameCount + ' / ' + uploadFileNum + '件の同名ファイルが存在します。\n上書きしますか。')) {
+					//form送信
+					document.getElementById('isExistSameName').value = "exist";
+					document.uploadForm.submit();
+				}
+			}
+		};
+
+		//――――――――――――――――ダウンロード――――――――――――――――――――――――――――//
+
+	const download = document.getElementById('download');
+	//テーブル内のダウンロードからダウンロードフォーム送信
+	download.addEventListener('click', (e) => {
+		document.downloadForm.submit();
+	});
+
+
+	const dlFile = (form) => {
+		form.submit();
+		return false;
 	}
+
+
+	const dlDirectory = (form) => {
+		form.submit();
+		return false;
+	}
+
+
+
+
+	//――――――――――――――――フォルダ作成――――――――――――――――――――――――――――//
+
+	const checkboxOfMkdir = document.getElementById('checkboxOfMkdir');
+	const mkdirTextValue = document.getElementById('mkdirTextValue');
+	const popupMkdirSubmitBtn = document.getElementById('popupMkdirSubmitBtn');
+	const mkdirThisDirectory = document.getElementById('mkdirThisDirectory');
+	const newDirectoryPath = document.getElementById('newDirectoryPath');
+	//フォルダ作成ボタン押下時、新規フォルダ名入力ポップアップ表示
+	checkboxOfMkdir.addEventListener('change', (e) => {
+		const name = "新しいフォルダ";
+//		checkboxOfMkdir.checked = true;
+		//画面上からクリックする場合
+		mkdir(name, false);
+	});
+
+	const mkdir = (fileName, bool) => {
+		//エラーの場合はロード時に表示する
+		if(bool) {
+			checkboxOfMkdir.checked = true;
+		}
+		if(mkdirTextValue.value == "") {
+			mkdirTextValue.value = fileName;
+		}
+		mkdirTextValue.select();
+	}
+
+	popupMkdirSubmitBtn.addEventListener('click', (e) => {
+		e.preventDefault();
+		if(mkdirThisDirectory.value.includes('/')) {
+			newDirectoryPath.value = mkdirThisDirectory.value + '/' + mkdirTextValue.value;
+		} else {
+			newDirectoryPath.value = mkdirThisDirectory.value + '\\' + mkdirTextValue.value;
+		}
+		document.mkdirForm.submit();
+	});
+
+
+	//フォルダ作成ポップアップウインドウ閉じたらエラーメッセージ消す
+	checkboxOfMkdir.addEventListener('change', (e) => {
+		if(document.getElementById('mkdirErrMsgs')) {
+			document.getElementById('mkdirErrMsgs').style.display = "none";
+		}
+	});
+
+	//――――――――――――――――名称変更――――――――――――――――――――――――――――//
+
+	const checkboxOfRename = document.getElementById('checkboxOfRename');
+	const popupRenameSubmitBtn = document.getElementById('popupRenameSubmitBtn');
+	const afterPath = document.getElementById('afterPath');
+	const renameThisDirectory = document.getElementById('renameThisDirectory');
+	const renameTextValue = document.getElementById('renameTextValue');
+	const renameTargetPath = document.getElementById('renameTargetPath');
+	//名称変更ボタン押下時、ファイル名変更ポップアップ表示
+	const rename = (filePath, fileName) => {
+		renameTextValue.value = fileName;
+		renameTextValue.select();
+		renameTargetPath.value = filePath;
+		checkboxOfRename.checked = true;
+	}
+
+	popupRenameSubmitBtn.addEventListener('click', (e) => {
+		e.preventDefault();
+		if(renameThisDirectory.value.includes('/')) {
+			afterPath.value = renameThisDirectory.value +  '/' + renameTextValue.value;
+		} else {
+			afterPath.value = renameThisDirectory.value +  '\\' + renameTextValue.value;
+		}
+		document.changeNameForm.submit();
+	});
+
+	//名称変更ポップアップウインドウ閉じたらエラーメッセージ消す
+	checkboxOfRename.addEventListener('change', (e) => {
+		if(document.getElementById('renameErrMsgs')) {
+			document.getElementById('renameErrMsgs').style.display = "none";
+		}
+	});
+
+	//――――――――――――――――移動――――――――――――――――――――――――――――//
+
+	const checkboxOfRenameByMove = document.getElementById('checkboxOfRenameByMove');
+	const popupMoveSubmitBtn = document.getElementById('popupMoveSubmitBtn');
+	const departure = document.getElementById('departure');
+	const destinationFilePath = document.getElementById('destinationFilePath');
+	var departureName;
+	var destinationPath;
+	//移動ボタン押下時、フォルダ一覧ポップアップ表示
+	const dirMove = (filePath) => {
+		checkboxOfRenameByMove.checked = true;
+		popupMoveSubmitBtn.disabled = true;
+		popupMoveSubmitBtn.style.cursor = "not-allowed";
+		departure.value = filePath;
+		departureName = filePath.replace(/^.*[\\\/]/, '');
+	}
+
+	//移動先フォルダ選択時、ボタン押下可能に
+	const isCheckedRadio = (destination) => {
+		popupMoveSubmitBtn.disabled = false;
+		popupMoveSubmitBtn.style.cursor = "pointer";
+		destinationPath = destination;
+	}
+
+	popupMoveSubmitBtn.addEventListener('click', (e) => {
+		e.preventDefault();
+		if(destinationPath.includes('/')) {
+			destinationFilePath.value = destinationPath +  '/' + departureName;
+		} else {
+			destinationFilePath.value = destinationPath +  '\\' + departureName;
+		}
+		document.renameByMoveForm.submit();
+	});
+
+	//移動先選択ポップアップウインドウ閉じたらエラーメッセージ消す
+	checkboxOfRenameByMove.addEventListener('change', (e) => {
+		if(document.getElementById('moveErrMsgs')) {
+			document.getElementById('moveErrMsgs').style.display = "none";
+		}
+	});
+
+	//――――――――――――――――削除――――――――――――――――――――――――――――//
+
+	const deleteTarget = document.getElementById('deleteTarget');
+	//フォルダ削除時の処理
+	const deleteDirectory = (filePath, fileName) => {
+		if (confirm('[ ' + fileName + ' ]内全てを削除します。よろしいですか。')) {
+			deleteTarget.value = filePath;
+			document.deleteForm.submit();
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	//ファイル削除時の処理
+	const deleteFile = (filePath, fileName) => {
+		if (confirm('[ ' + fileName + ' ]を削除します。よろしいですか。')) {
+			deleteTarget.value = filePath;
+			document.deleteForm.submit();
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
+	/*
+	//移動ボタンを押してチェックボックスがチェック状態になったときと閉じるとき
+	checkboxOfRenameByMove.addEventListener('change', (e) => {
+		if(checkboxOfRenameByMove.checked == false) {
+			document.reloadForm.submit();
+		}
+	});
+	*/
+
+
+	/*]]>*/
+
 </script>
 
 </body>

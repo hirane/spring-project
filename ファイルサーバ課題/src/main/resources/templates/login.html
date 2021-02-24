@@ -1,52 +1,38 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
 <title>ログイン</title>
+<link th:href="@{/css/common.css}" rel="stylesheet">
+<link th:href="@{/css/loginAndRegist.css}" rel="stylesheet">
 </head>
 <body>
-<h1 align="center">ログイン</h1>
-<form th:action="@{/authenticate}" method="POST">
-    <table align="center">
-        <tr>
-            <td>
-                ユーザID(メールアドレス)
-            </td>
-       </tr>
-       <tr>
-            <td>
-                <input type="text" id="user" name="userId" th:value="*{userid}"
-                placeholder="E-Mail形式で半角英数字254文字以内" size="60"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                パスワード
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input type="password" id="password" name="password" th:value="*{password}"
-                placeholder="半角英数字32文字以内" size="60"/>
-            </td>
-        </tr>
-        <tr>
-            <td align="center">
-                <input type="submit" value="ログイン" style="width:440px;background-color:#ffb6c1"/>
-            </td>
-        </tr>
-    </table>
-    <p>
-</form>
-<form th:action="@{/regist}" method="GET">
-    <table align="center">
-        <tr>
-            <td>
-                <input type="submit" value="未登録の場合はコチラ" style="width:440px;background-color:#d3d3d3"/>
-            </td>
-        </tr>
-    </table>
-</form>
+	<div class="contentsWrap">
+		<h1 class="heading">ログイン</h1>
+		<div class="mainContents">
+			<div class="highlight" th:if="${isTimeout}" th:text="${timeoutMsg}"></div>
+			<div class="highlight" th:if="${isErr}" th:text="${errMsg}"></div>
+			<form th:action="@{/authenticate}" method="POST">
+				<div class="inputArea">
+					<div class="label"><label for="userId">ユーザID(メールアドレス)</label></div>
+					<input type="text" id="user" name="userId" th:value="*{userid}" placeholder="E-Mail形式で半角英数字254文字以内" size="254">
+				</div>
+
+				<div class="inputArea">
+					<div class="label"><label for="password">パスワード</label></div>
+					<input type="password" id="password" name="password" th:value="*{password}" placeholder="半角英数字32文字以内" size="32">
+				</div>
+
+				<input class="btn pinkBtn longBtn" type="submit" value="ログイン">
+			</form>
+		</div>
+
+		<form th:action="@{/registView}" method="POST">
+			<div class="mainContents">
+				<input class="btn grayBtn longBtn" type="submit" value="未登録の場合はコチラ">
+			</div>
+		</form>
+	</div>
+
 </body>
 </html>

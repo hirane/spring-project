@@ -1,0 +1,6 @@
+{"properties": [{
+  "name": "WORKING_DIRECTORY",
+  "type": "java.lang.String",
+  "description": "共有ファイルを置くワーキングディレクトリ"
+}]}
+

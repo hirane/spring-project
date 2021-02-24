@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.fileServer.entity.UserForm;
 import com.fileServer.entity.Users;
 
 @SpringBootTest
@@ -23,7 +22,7 @@ public class UserServiceTest {
 	@Test
 	public void 正常系_insertUserInfo_DBテーブルに追加_1レコード追加される() {
 		//引数のuserFormインスタンスに値を設定
-		UserForm userForm = new UserForm();
+		Users userForm = new Users();
 		userForm.setUserId("test@new");
 		userForm.setUserName("new");
 		userForm.setPassword("new");
@@ -52,6 +51,7 @@ public class UserServiceTest {
 		assertThat(result, is(true));
 	}
 
+	/*
 	//1－009
 	@Test
 	public void 正常系_isDuplicatedUserName_ユーザ名重複なし_false() {
@@ -71,6 +71,7 @@ public class UserServiceTest {
 		//検証
 		assertThat(result, is(true));
 	}
+	*/
 
 	//2-008
 	@Test

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>ログイン</title>
+</head>
+<body>
+<h1 align="center">ログイン</h1>
+<form th:action="@{/authenticate}" method="POST">
+    <table align="center">
+        <tr>
+            <td>
+                ユーザID(メールアドレス)
+            </td>
+       </tr>
+       <tr>
+            <td>
+                <input type="text" id="user" name="userId" th:value="*{userid}"
+                placeholder="E-Mail形式で半角英数字254文字以内" size="60"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                パスワード
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="password" id="password" name="password" th:value="*{password}"
+                placeholder="半角英数字32文字以内" size="60"/>
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <input type="submit" value="ログイン" style="width:440px;background-color:#ffb6c1"/>
+            </td>
+        </tr>
+    </table>
+    <p>
+</form>
+<form th:action="@{/regist}" method="GET">
+    <table align="center">
+        <tr>
+            <td>
+                <input type="submit" value="未登録の場合はコチラ" style="width:440px;background-color:#d3d3d3"/>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>

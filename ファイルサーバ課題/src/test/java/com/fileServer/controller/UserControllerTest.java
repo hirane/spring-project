@@ -17,8 +17,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import com.fileServer.entity.UserForm;
+import com.fileServer.entity.UserManagement;
 import com.fileServer.entity.Users;
+import com.fileServer.mapper.UserMapper;
 import com.fileServer.service.UserService;
 
 @SpringBootTest
@@ -36,6 +37,9 @@ public class UserControllerTest {
 	//テスト対象クラス
 	@Autowired
 	UserController userController;
+
+	@Autowired
+	UserMapper userMapper;
 
 	 /**
      * 準備(各テストケース実行前に実行する処理)
@@ -63,7 +67,7 @@ public class UserControllerTest {
                 .andReturn();
 
 		// ModelオブジェクトのuserFormに設定される値が正しいことを確認
-		UserForm resultForm = (UserForm) result.getModelAndView().getModel().get("userForm");
+		UserManagement resultForm = (UserManagement) result.getModelAndView().getModel().get("userForm");
 
 		//検証:ModelのuserFormの初期値
 		assertEquals(resultForm.getUserId(),null);
@@ -76,7 +80,7 @@ public class UserControllerTest {
     @Test
     public void 正常系_userRegist_登録画面にModelAndViewを返す() throws Exception{
     	//リクエストで受け取るUserFormオブジェクトを作成
-    	UserForm userForm = new UserForm();
+    	UserManagement userForm = new UserManagement();
     	userForm.setUserId("test@new");
     	userForm.setUserName("new");
     	userForm.setPassword("test");
@@ -100,7 +104,7 @@ public class UserControllerTest {
     @Test
     public void 異常系_userRegist_ユーザID重複あり_登録画面にModelAndViewを返す() throws Exception{
     	//リクエストで受け取るUserFormオブジェクトのテストデータ作成
-    	UserForm userForm = new UserForm();
+    	UserManagement userForm = new UserManagement();
     	userForm.setUserId("test@test");
     	userForm.setUserName("none");
     	userForm.setPassword("none");
@@ -131,14 +135,14 @@ public class UserControllerTest {
     @Test
     public void 異常系_userRegist_ユーザ名重複あり_登録画面にModelAndViewを返す() throws Exception{
     	//リクエストで受け取るUserFormオブジェクトを作成
-    	UserForm userForm = new UserForm();
+    	UserManagement userForm = new UserManagement();
     	userForm.setUserId("none@none");
     	userForm.setUserName("test");	//重複
     	userForm.setPassword("none");
     	userForm.setConPassword("none");
 
     	// モック生成
-    	when(userService.isDuplicatedUserName("test")).thenReturn(true);
+    	when(userMapper.findUserName("test")).thenReturn(true);
 
     	// テスト対象メソッドを実行
     	//POSTで/registへパラメータuserFormをリクエスト送信。
@@ -162,7 +166,7 @@ public class UserControllerTest {
     @Test
     public void 異常系_userRegist_パスワード不一致_登録画面にModelAndViewを返す() throws Exception{
     	//リクエストで受け取るUserFormオブジェクトを作成
-    	UserForm userForm = new UserForm();
+    	UserManagement userForm = new UserManagement();
     	userForm.setUserId("none@none");
     	userForm.setUserName("none");	//重複
     	userForm.setPassword("test");

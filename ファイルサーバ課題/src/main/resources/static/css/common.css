@@ -1,0 +1,221 @@
+@charset "UTF-8";
+
+html, body, ul, ol, li, h1, h2, h3, h4, h5, h6, p, div {
+	margin: 0;
+	padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6, p, label {
+	color: #202020
+}
+
+body {
+	font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+}
+
+li {
+	list-style: none;
+}
+
+a, label, input, button {
+	text-decoration: none;
+	cursor: pointer;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+/* ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^ */
+
+.contentsWrap {
+	min-width: 900px;
+	width: 100%;
+	height: 100vh;
+	text-align: center;
+	margin: 0 auto;
+}
+
+.heading {
+	padding: 30px 0 0;
+	margin-bottom: 10px;
+	text-align: center;
+}
+
+.err {
+	color:red;
+	text-align: left;
+}
+
+.errSmall {
+	font-size: 0.7em;
+	color:red;
+	text-align: center;
+	padding-top: 4px;
+}
+
+.highlight {
+	color: red;
+	font-size: 1.2em;
+	text-align: center;
+}
+
+
+
+
+.btn {
+	text-align: center;
+	border: none;
+	border-radius: 20px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.btn:active {
+	box-shadow: none;
+	position: relative;
+	top: 2px;
+}
+
+.btn:focus {
+	outline: 0;
+}
+
+.pinkBtn {
+	background-color: rgba(255, 204, 204, 0.7);
+	box-shadow: 0 2px #DAA;
+}
+
+.pinkBtn:hover {
+	background-color: rgba(255, 204, 204, 1);
+	transition: .3s ease;
+}
+
+.grayBtn {
+	background-color: rgba(170, 170, 170, 0.7);
+	box-shadow: 0 2px #888;
+}
+
+.grayBtn:hover {
+	background-color: rgba(170, 170, 170, 1);
+	transition: .3s ease;
+}
+
+.silverBtn {
+	background-color: rgba(222, 222, 222, 0.7);
+	box-shadow: 0 2px #AAA;
+}
+
+.silverBtn:hover {
+	background-color: rgba(222, 222, 222, 1);
+	transition: .3s ease;
+}
+
+.longBtn {
+	width: 100%;
+	margin: 25px 0 5px;
+	padding: 3px 0;
+	line-height: 40px;
+}
+
+.mediumBtn {
+	width: 200px;
+	margin: 10px 40px;
+	padding: 3px 0;
+	line-height: 35px;
+}
+
+.smallBtn {
+	width: 130px;
+	margin: 5px 0;
+	padding: 5px 0;
+	line-height: 25px;
+}
+
+.smallerBtn {
+	width: 100px;
+	padding: 3px 0;
+	line-height: 20px;
+	border-radius: 8px;
+}
+
+.smallerBtn1 {
+	width: 80px;
+	padding: 3px 0;
+	line-height: 20px;
+	border-radius: 8px;
+}
+
+.miniBtn {
+	width: 40px;
+	padding: 3px 0;
+	line-height: 20px;
+	border-radius: 8px;
+}
+
+select {
+	appearance: none;
+	width: 90%;
+	line-height: 20px;
+	text-align: center;
+	padding: 3px;
+	border-radius: 8px;
+	cursor: pointer;
+	box-shadow: none;
+}
+
+.logoutBtn {
+	margin-bottom: 40px;
+}
+
+.blockBtn {
+	display: inline-block;
+}
+
+
+/*――――――エラーページ――――――*/
+
+.backgroundBlue {
+	background-color: rgba(187, 187, 255, 0.4);
+}
+
+.errWrap {
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.errContents {
+	width: 70%;
+	text-align: center;
+	padding: 40px 30px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.errHeading {
+	font-size: 2.5em;
+	font-weight: normal;
+}
+
+.errBtn {
+	width: 40%;
+	margin: 50px 0 5px;
+	padding: 3px 0;
+	line-height: 40px;
+}
+
+.errContents form {
+	width: 100%;
+}
+
+.errContents p,
+.errContents h1 {
+	padding: 5px;
+}
+
+

@@ -38,9 +38,12 @@ public class DbUsersDetailsService implements UserDetailsService {
      * @param users DBから取得したユーザ情報。
      * @return 権限の範囲のリスト。
      */
-    private Collection<GrantedAuthority> getAuthorities(Users users) {
+    private Collection<? extends GrantedAuthority> getAuthorities(Users users) {
+
+    	String authority = "AUTHORITY_" + users.getAuthority();
+
         //認可が通った時にこのユーザに与える権限の範囲を設定する。
-        return AuthorityUtils.createAuthorityList("ROLE_USER");
+        return AuthorityUtils.createAuthorityList(authority);
     }
 
 }

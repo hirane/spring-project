@@ -1,0 +1,107 @@
+@charset "UTF-8";
+
+.container {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: flex-start;
+}
+
+.mainContents {
+	width: 95%;
+	min-width: 680px;
+	height: 90vh;
+	text-align: center;
+	padding: 20px 10px 20px 50px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: flex-start;
+}
+
+.sideContents {
+	width: 220px;
+	min-width: 200px;
+	height: 90vh;
+	text-align: left;
+	padding: 20px 10px 20px 40px;
+	margin: 0 auto;
+}
+
+.move {
+	padding: 15px;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+th {
+	font-size: 1.1rem;
+	font-weight: 400;
+	height: 100px;
+	line-height: 35px;
+	text-align: left;
+	vertical-align: middle;
+	padding: 5px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+td {
+	height: 120px;
+	max-width: 0;
+	border: 1px solid silver;
+	padding: 5px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.mainTable {
+	width: 80%;
+}
+
+p,
+.label {
+	text-align: left;
+	line-height: 30px;
+}
+
+.hasMarginTop {
+	margin-top: 25px;
+}
+
+.userInfoTable {
+	width: 100%;
+}
+
+.userInfoCol {
+	width: 80%;
+}
+
+.changeCol {
+	min-width: 90px;
+	max-width: 120px;
+}
+
+input[type="text"],
+input[type="password"] {
+	cursor: auto;
+	width: 100%;
+	height: 35px;
+}
+
+.tr1 {
+	height: 90px;
+}
+
+.tr2 {
+	height: 230px;
+}
+
+
+
+

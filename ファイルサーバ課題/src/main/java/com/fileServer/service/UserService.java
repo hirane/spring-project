@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fileServer.entity.UserForm;
 import com.fileServer.entity.Users;
 import com.fileServer.mapper.UserMapper;
 
@@ -35,7 +34,7 @@ public class UserService {
 	 * 新規ユーザ登録情報をDBに保存
 	 * @param user
 	 */
-	public void insertUserInfo(UserForm userForm) {
+	public void insertUserInfo(Users userForm) {
 		//パスワードをハッシュ化
 		String hashedPassword = passwordEncoder.encode(userForm.getPassword());
 		//DB登録用のUserインスタンス作成
@@ -115,6 +114,7 @@ public class UserService {
 	 * @param userId
 	 * @return
 	 */
+	/*
 	public boolean isDuplicatedUserName(String userName) {
 		//入力ユーザ名に一致する数を返す
 		int result = userMapper.findUserName(userName);
@@ -125,5 +125,6 @@ public class UserService {
 		//以外0のとき重複ありでtrueを返す
 		return true;
 	}
+	*/
 
 }

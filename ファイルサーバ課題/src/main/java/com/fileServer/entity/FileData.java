@@ -17,9 +17,6 @@ public class FileData implements Serializable {
 //	ファイル名
 	private String fileName;
 
-//	ファイル
-//	private InputStream fileObj;
-
 //	ファイルのフルパス→階層の取得に使用
 	private String filePath;
 

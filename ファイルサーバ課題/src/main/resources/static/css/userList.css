@@ -1,0 +1,114 @@
+@charset "UTF-8";
+
+.container {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: flex-start;
+}
+
+.mainContents {
+	width: 95%;
+	min-width: 680px;
+	height: 90vh;
+	text-align: center;
+	padding: 20px 10px 20px 50px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: flex-start;
+}
+
+.sideContents {
+	width: 220px;
+	min-width: 200px;
+	height: 90vh;
+	text-align: left;
+	padding: 20px 10px 20px 40px;
+	margin: 0 auto;
+}
+
+.move {
+	padding: 15px;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+th {
+	font-size: 1.2rem;
+	font-weight: 500;
+	height: 60px;
+	text-align: center;
+	vertical-align: middle;
+	padding: 5px;
+	border: 1px solid silver;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+td {
+	height: 40PX;
+	max-width: 0;
+	border: 1px solid silver;
+	padding: 5px;
+}
+
+td p {
+	text-align: left;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+td p:hover {
+	word-wrap: break-word;
+	white-space: normal;
+}
+
+.mainTable {
+	width: 90%;
+	min-width: 650px;
+	overflow-y: auto;
+}
+
+.userManagementTable {
+	width: 100%;
+
+}
+
+.userIdCol {
+	width: 42%;
+}
+
+.userNameCol {
+	width: 25%;
+}
+
+
+.userAuthCol {
+	min-width: 85px;
+	max-width: 100px;
+}
+
+
+.userDeleteCol {
+	min-width: 65px;
+	max-width: 75px;
+}
+
+.readable {
+	border: 2px solid #AAA;
+}
+
+.writable {
+	border: 2px solid #77F;
+}
+
+
+
+
+

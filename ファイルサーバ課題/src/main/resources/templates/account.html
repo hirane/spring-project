@@ -3,61 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <title>ユーザ情報更新</title>
+<link th:href="@{/css/common.css}" rel="stylesheet">
+<link th:href="@{/css/account.css}" rel="stylesheet">
 </head>
 <body>
-	<h2>ユーザ情報更新</h2>
-	<p th:if="${isErr}" th:text="${errMsg}"></p>
+	<div class="contentsWrap">
+		<h1 class="heading">ユーザ情報更新</h1>
+		<div class="container">
+			<div class="sideContents">
 
-	<div class="move">
-		<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
-		<form th:action="@{/logout}" method="GET">
-			<input type="submit" name="toLogout" value="ログアウト">
-		</form>
-		<form th:action="@{/fileView}" method="GET">
-			<input type="submit" name="moveButton" value="ファイルサーバ">
-		</form>
-		<form th:action="@{/updateUser}" method="GET">
-			<input type="submit" name="moveButton" value="ユーザ情報更新">
-		</form>
-		<!--/*マスタの場合のみ*/-->
-		<form th:action="@{/userList}" method="GET">
-			<input type="submit" name="moveButton" value="ユーザ管理">
-		</form>
+				<div class="move">
+					<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
+					<form th:action="@{/logout}" method="POST">
+						<input class="btn grayBtn smallBtn logoutBtn" type="submit" name="toLogout" value="ログアウト">
+					</form>
+					<form th:action="@{/fileView/top}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ファイルサーバ">
+					</form>
+					<form th:action="@{/updateUser}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ユーザ情報更新">
+					</form>
+					<!--/*マスタの場合のみ*/-->
+					<form th:if="${userAuth} == 0" th:action="@{/userList}" method="POST">
+						<input class="btn grayBtn smallBtn" type="submit" name="moveButton" value="ユーザ管理">
+					</form>
+				</div>
+			</div>
+
+			<div class="mainContents">
+				<div class="mainTable">
+					<form action="" method="POST" name="updateForm">
+					<table th:object="${userForm}" class="userInfoTable">
+						<tr>
+							<th class="userInfoCol">
+								<p>ユーザID(メールアドレス)</p>
+								<p id="userId" th:text="*{userId}"></p>
+								<!--/*<input type="hidden" th:field="*{userId}">*/-->
+							</th>
+							<th class="changeCol"></th>
+						</tr>
+
+						<!--/*<form action="/updateName" method="POST">*/-->
+							<tr class="tr1">
+								<td>
+									<div class="label"><label for="userName">ユーザ名</label></div>
+									<input id="userName" type="text" name="userName" th:field="*{userName}">
+									<div class="err" th:if="${isChangeNameErr}" th:text="${errMsg}"></div>
+									<div th:if="${isDispNameErr}">
+										<div th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}" th:errorclass="err" ></div>
+									</div>
+								</td>
+								<td><input class="btn silverBtn smallBtn" type="submit" id="updateName" value="変更"></td>
+							</tr>
+						<!--/*</form>*/-->
+
+						<!--/*<form action="/updatePassword" method="POST">*/-->
+							<tr class="tr2">
+								<td>
+									<div class="label">
+										<label for="password">パスワード</label>
+									</div>
+									<input id="password" type="password" th:field="*{password}" placeholder="半角英数字32文字以内">
+									<div th:if="${isDispPwErr}">
+										<div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" th:errorclass="err" ></div>
+									</div>
+
+									<div class="hasMarginTop label">
+										<label for="conPassword">確認用パスワード</label>
+									</div>
+									<input id="conPassword" type="password" th:field="*{conPassword}" placeholder="半角英数字32文字以内">
+									<div class="err" th:if="${isChangePwErr}" th:text="${errMsg}"></div>
+									<div th:if="${isDispConPwErr}">
+										<div th:if="${#fields.hasErrors('conPassword')}" th:errors="*{conPassword}" th:errorclass="err" ></div>
+									</div>
+								</td>
+								<td><input class="btn silverBtn smallBtn" type="submit" id="updatePw" value="変更"></td>
+							</tr>
+						<!--/*</form>*/-->
+					</table>
+					</form>
+				</div>
+			</div>
+		</div>
 	</div>
 
-	<table th:object="${loginUser}" border="1">
-	  <tr>
-	    <td>
-          <label for="userId">ユーザID(メールアドレス)</label>
-          <div><p id="userId" th:text="*{userId}"></div>
-        </td>
-        <td>変更不可</td>
-      </tr>
-
-	  <form action="/updateName" method="POST">
-	    <tr>
-	      <td>
-            <label for="userName">ユーザ名</label>
-            <div><input id="userName" type="text" name="userName" th:value="*{userName}"></div>
-	      </td>
-          <td><input type="submit" value="変更"></td>
-	  </tr>
-		</form>
-
-	  <form action="/updatePassword" method="POST">
-	    <tr>
-	      <td>
-            <label for="password">パスワード</label>
-            <div><input id="password" type="password" name="password" placeholder="半角英数字32文字以内"></div>
-            <label for="conPassword">確認用パスワード</label>
-            <div><input id="conPassword" type="password" name="conPassword" placeholder="半角英数字32文字以内"></div>
-          </td>
-          <td><input type="submit" value="変更"></td>
-  	    </tr>
-      </form>
-   </table>
-
-   <script type="text/javascript" th:inline="javascript">
+	<script th:src="@{/js/account.js}"></script>
+	<script type="text/javascript" th:inline="javascript">
    /* コントローラから登録完了フラグを取得してメッセージ出力 */
    if(/*[[${isUpdated}]]*/){
      alert("ユーザ情報更新が完了しました。");

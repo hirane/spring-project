@@ -1,0 +1,381 @@
+@charset "UTF-8";
+
+.container {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: flex-start;
+}
+
+.mainContents {
+	width: 95%;
+	min-width: 680px;
+	height: 90vh;
+	text-align: center;
+	padding: 20px 10px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.sideContents {
+	width: 220px;
+	min-width: 200px;
+	height: 90vh;
+	text-align: left;
+	padding: 20px 10px 20px 40px;
+	margin: 0 auto;
+}
+
+.move, .func {
+	padding: 15px;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+th {
+	font-weight: 500;
+	height: 40px;
+	text-align: left;
+	vertical-align: bottom;
+	padding-bottom: 5px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+td {
+	height: 40px;
+	max-width: 0;
+	vertical-align: middle;
+	border-top: 1px solid silver;
+	padding: 3px;
+
+}
+
+td div {
+	width: 100%;
+	line-height: 30px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+
+.heading {
+	padding: 30px 0 0;
+	margin-bottom: 10px;
+	text-align: center;
+}
+
+.dirLevel {
+	text-align: left;
+	border: 1px solid gray;
+	padding: 5px 10px 10px;
+	min-height: 25px;
+	margin-bottom: 15px;
+	width: 95%;
+	min-width: 650px;
+	white-space: nowrap;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.dirListLabel:hover {
+	background-color: rgba(200, 220, 240, 0.6);
+}
+
+.mainTable {
+	font-size: 0.8rem;
+	width: 95%;
+	min-width: 650px;
+	overflow-y: auto;
+}
+
+.serverTable {
+	width: 100%;
+}
+
+.th1 {
+	min-width: 40px;
+	max-width: 55px;
+	margin: 0 auto;
+}
+
+.th2 {
+	width: 60%;
+	resize: horizontal;
+}
+
+.th3 {
+	width: 16%;
+	resize: horizontal;
+}
+
+.th4 {
+	width: 16%;
+	resize: horizontal;
+}
+
+.th5 {
+	min-width: 110px;
+	max-width: 150px;
+}
+
+.th6 {
+	min-width: 90px;
+	max-width: 120px;
+}
+
+.th7 {
+	min-width: 50px;
+	max-width: 60px;
+}
+
+.th8 {
+	min-width: 50px;
+	max-width: 60px;
+}
+
+.tdLeftAlign {
+	text-align: left;
+}
+
+.hideBtn {
+	display: none;
+}
+
+.lineLabel:hover {
+	background-color: rgba(200, 200, 220, 0.2);
+}
+
+.dragOver {
+	position: relative;
+	z-index: 9999;
+	background-color: rgba(100, 150, 200, 0.8);
+	transition: opacity 0.5s, transform 0s 0.5s;
+}
+
+.dragOver::after {
+	display: block;
+	content: 'ファイルをアップロードします';
+	position: absolute;
+	top: 50%;
+	color: #444;
+	background-color: rgba(255, 255, 255, 0.8);
+	margin: 0 auto;
+	font-size: 2em;
+}
+
+/*――――――――――ポップアップ――――――――――*/
+
+.popupWrap input {
+	display: none;
+}
+
+
+.overlay {
+	display: flex;
+	justify-content: center;
+	overflow: auto;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 9999;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+	opacity: 0;
+	transition: opacity 0.5s, transform 0s 0.5s;
+	transform: scale(0);
+}
+
+.popupCloseRange {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+.popupField {
+	position: relative;
+	align-self: center;
+	width: 90%;
+	height: 75%;
+	max-width: 1100px;
+	min-width: 400px;
+	max-height: 800px;
+	min-height: 600px;
+	text-align: left;
+	padding: 0 30px 0;
+	background-color: #EEE;
+	transition: 0.5s;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+
+.popupContents {
+	width: 100%;
+	height: 85%;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.popupTableHead {
+	font-size: 0.9rem;
+	width: 95%;
+	padding: 10px 0 0;
+	overflow: hidden;
+}
+
+.popupTable {
+	font-size: 0.8rem;
+	width: 95%;
+	height: 90%;
+	padding: 0 0 20px;
+	overflow-x: auto;
+	overflow-y: auto;
+}
+
+.popupCloseBtn {
+	position: absolute;
+	display: block;
+	text-align: center;
+	line-height: 35px;
+	top: 0;
+	right: 0;
+	width: 40px;
+	height: 40px;
+	font-size: 30px;
+}
+
+.popupCloseBtn:hover {
+	color: white;
+	background-color: red;
+}
+
+#popupMoveSubmitBtn,
+#popupRenameSubmitBtn,
+#popupMkdirSubmitBtn {
+	display: block;
+	margin: 15px auto;
+}
+
+.popupWrap input:checked ~ .overlay {
+	opacity: 1;
+	transform: scale(1);
+	transition: opacity 0.5s;
+}
+
+.linePopupLabel:hover {
+	background-color: rgba(200, 200, 220, 0.2);
+}
+
+.linePopupLabel input[type="radio"]:checked ~ label {
+	color: black;
+	background-color: rgba(255, 210, 210, 0.5);
+	font-size: 1.1em;
+}
+
+.linePopupLabel input[type="radio"]:checked + span {
+	display: inline;
+	color: orange;
+}
+
+.popTblW1 {
+	width:40%;
+}
+
+.popTblW2 {
+	width: 60%;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.popTblW1 div {
+	width: 100%;
+}
+
+.popTblW2 label {
+	display: inline-block;
+	width: 100%;
+}
+
+.popTblW1 div:hover,
+.popTblW2 div:hover {
+	white-space: normal;
+}
+
+
+
+.checkedFiles input[type="checkbox"]:checked ~ label {
+	font-size: 1.1em;
+	color: black;
+	background-color: rgba(255, 210, 210, 0.5);
+}
+
+
+.checkedFiles input[type="checkbox"]:checked + span {
+	display: inline;
+	color: orange;
+}
+
+.checkedFiles input[type="checkbox"]:checked ~ label::after {
+	position: relative;
+	content: 'まとめてダウンロード';
+	height: 100%;
+	font-size: 0.7em;
+	background-color: rgba(200, 220, 240, 0.8);
+	margin-left: 5px;
+}
+
+
+input[type="text"] {
+	display: inline-block;
+	cursor: auto;
+	width: 100%;
+	height: 35px;
+}
+
+
+.popupFieldText {
+	position: relative;
+	align-self: center;
+	width: 30%;
+	min-width: 400px;
+	height: 200px;
+	padding: 20px 40px 0;
+	background-color: #EEE;
+	transition: 0.5s;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.popupFieldTextHasErrors {
+	max-height: 260px;
+	min-height: 240px;
+}
+
+
+.popupContentsText {
+	width: 90%;
+	height: 90%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+
+
