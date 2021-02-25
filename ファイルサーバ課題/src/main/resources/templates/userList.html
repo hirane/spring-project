@@ -18,7 +18,7 @@
 
 				<div class="move">
 					<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
-					<form th:action="@{/logout}" method="POST">
+					<form th:action="@{/logout}" method="GET">
 						<input class="btn grayBtn smallBtn logoutBtn" type="submit" name="toLogout" value="ログアウト">
 					</form>
 					<form th:action="@{/fileView/top}" method="POST">

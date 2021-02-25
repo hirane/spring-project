@@ -14,7 +14,7 @@
 
 				<div class="move">
 					<!--/*WebSecurityConfigueの .logoutSuccessUrl("/○○") のパラメーターがth:actionに入る*/-->
-					<form th:action="@{/logout}" method="POST">
+					<form th:action="@{/logout}" method="GET">
 						<input class="btn grayBtn smallBtn logoutBtn" type="submit" name="toLogout" value="ログアウト">
 					</form>
 					<form th:action="@{/fileView/top}" method="POST">
@@ -47,7 +47,8 @@
 							<tr class="tr1">
 								<td>
 									<div class="label"><label for="userName">ユーザ名</label></div>
-									<input id="userName" type="text" name="userName" th:field="*{userName}">
+									<input id="userName" type="text" name="userName" th:field="*{userName}"
+											th:classappend="|${isChangeNameErr==true ? 'errBox' : ''} ${isDispNameErr==true ? 'errBox' : ''}|">
 									<div class="err" th:if="${isChangeNameErr}" th:text="${errMsg}"></div>
 									<div th:if="${isDispNameErr}">
 										<div th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}" th:errorclass="err" ></div>
@@ -63,7 +64,8 @@
 									<div class="label">
 										<label for="password">パスワード</label>
 									</div>
-									<input id="password" type="password" th:field="*{password}" placeholder="半角英数字32文字以内">
+									<input id="password" type="password" th:field="*{password}" placeholder="半角英数字32文字以内"
+											th:classappend="|${isChangePwErr==true ? 'errBox' : ''} ${isDispPwErr==true ? 'errBox' : ''}|">
 									<div th:if="${isDispPwErr}">
 										<div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" th:errorclass="err" ></div>
 									</div>
@@ -71,7 +73,8 @@
 									<div class="hasMarginTop label">
 										<label for="conPassword">確認用パスワード</label>
 									</div>
-									<input id="conPassword" type="password" th:field="*{conPassword}" placeholder="半角英数字32文字以内">
+									<input id="conPassword" type="password" th:field="*{conPassword}" placeholder="半角英数字32文字以内"
+											th:classappend="|${isChangePwErr==true ? 'errBox' : ''} ${isDispConPwErr==true ? 'errBox' : ''}|">
 									<div class="err" th:if="${isChangePwErr}" th:text="${errMsg}"></div>
 									<div th:if="${isDispConPwErr}">
 										<div th:if="${#fields.hasErrors('conPassword')}" th:errors="*{conPassword}" th:errorclass="err" ></div>

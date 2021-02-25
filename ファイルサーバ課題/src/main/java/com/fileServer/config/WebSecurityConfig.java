@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.fileServer.validation.MyAuthenticationFailureHandler;
+
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
@@ -55,15 +57,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		.loginPage("/login")
 		//認証処理に移るためのURL(ログインフォームのaction先と同じに設定)
 		.loginProcessingUrl("/authenticate")
-//		.loginProcessingUrl("/loginProcess")
 		//ログイン失敗時の遷移先
-		.failureUrl("/login-error")
+//		.failureUrl("/login-error")
+		.failureHandler(new MyAuthenticationFailureHandler("/login-error"))
 		//ログインフォームのユーザ名入力欄name
 		.usernameParameter("userId")
 		//ログインフォームのパスワード入力欄name
 		.passwordParameter("password")
 		//ログイン成功時の遷移先
-		.defaultSuccessUrl("/fileView/top",true)
+		.defaultSuccessUrl("/fileView/top", true)
 		//ログインページのアクセスは全員許可する
 		.permitAll();
 
@@ -74,7 +76,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		.deleteCookies("JSESSIONID")
 		//ログアウト時の遷移先
 		.logoutSuccessUrl("/login");
-
 	}
 
 	@Bean
@@ -87,4 +88,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		auth.userDetailsService(userDetailsService)
 		.passwordEncoder(passwordEncoder());
 	}
+
+
+
 }

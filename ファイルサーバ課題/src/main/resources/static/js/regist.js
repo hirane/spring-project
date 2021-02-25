@@ -10,6 +10,7 @@ const registForm = document.getElementById('registForm');
 registBtn.addEventListener('click', (e) => {
 	e.preventDefault();
 	registForm.action = '/regist';
+	registForm.method = 'POST';
 	document.registForm.submit();
 });
 
@@ -17,6 +18,7 @@ registBtn.addEventListener('click', (e) => {
 backBtn.addEventListener('click', (e) => {
 	e.preventDefault();
 	registForm.action = '/login';
+	registForm.method = 'GET';
 	document.registForm.submit();
 });
 

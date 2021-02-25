@@ -30,23 +30,11 @@ public class UserController {
 	@Autowired
 	UserMapper userMapper;
 
-	/*
 	@ModelAttribute("userForm")
-	public Users setup(@AuthenticationPrincipal DbUsersDetails loginUser) {
-		Users userForm = new Users();
-		if(Objects.equals(userForm.getAuthority(), null)) {
-			userForm.setAuthority(loginUser.getUsers().getAuthority());
-		}
-
-		return userForm;
-	}
-
-	@ModelAttribute("userForm")
-	public Users setup() {
+	public Users init() {
 		Users userForm = new Users();
 		return userForm;
 	}
-	*/
 
 	//ーーーーーーーーーーーーーユーザ管理画面ーーーーーーーーーーーーーーーーー
 
@@ -56,7 +44,7 @@ public class UserController {
 	 * @return mav
 	 */
 	@RequestMapping("/userList")
-	public String showUserList(@ModelAttribute("userForm") Users userForm, Model model, @AuthenticationPrincipal DbUsersDetails loginUser){
+	public String showUserList(Users userForm, Model model, @AuthenticationPrincipal DbUsersDetails loginUser){
 		//ユーザ情報を詰める
 		List<Users> userlist = userService.findAll();
 		model.addAttribute("userlist", userlist);
@@ -70,7 +58,7 @@ public class UserController {
 	 * @return userListページ
 	 */
 	@PostMapping("/editAuth")
-	public String editAuthority(@ModelAttribute("userForm") Users userForm, @AuthenticationPrincipal DbUsersDetails loginUser, Model model) {
+	public String editAuthority(Users userForm, @AuthenticationPrincipal DbUsersDetails loginUser, Model model) {
 		//select要素で1か2以外が送信された場合、更新されない
 		if(userForm.getAuthority() != 1 && userForm.getAuthority() != 2) {
 			model.addAttribute("errMsg", "更新に失敗しました");
@@ -89,7 +77,7 @@ public class UserController {
 	 * @return userListページ
 	 */
 	@PostMapping("/delete")
-	public String deleteUser(@ModelAttribute("userForm") Users userForm, @AuthenticationPrincipal DbUsersDetails loginUser, Model model) {
+	public String deleteUser(Users userForm, @AuthenticationPrincipal DbUsersDetails loginUser, Model model) {
 		Users user = userService.findById(userForm.getUserId());
 		//マスタ権限のユーザが削除対象になった場合、削除されない
 		if(user.getAuthority() == 0) {
@@ -122,8 +110,7 @@ public class UserController {
 	 * @return mav
 	 */
 	@RequestMapping("/regist")
-	public String userRegist(@ModelAttribute("userForm") @Validated Users userForm, BindingResult br,
-			Model model, RedirectAttributes redirectAttributes) {
+	public String userRegist(@Validated Users userForm, BindingResult br, Model model, RedirectAttributes redirectAttributes) {
 		//バリデーションチェック
 		//入力制限の違反する場合
 		if (br.hasErrors()) {
@@ -226,7 +213,7 @@ public class UserController {
 	 * @return
 	 */
 	@PostMapping("/updateName")
-	public String updateUserName(@ModelAttribute("userForm") @Validated Users userForm, BindingResult br,
+	public String updateUserName(@Validated Users userForm, BindingResult br,
 			@AuthenticationPrincipal DbUsersDetails loginUser, Model model, RedirectAttributes redirectAttributes) {
 		userForm.setUserId(loginUser.getUsers().getUserId());
 
@@ -275,8 +262,7 @@ public class UserController {
 	 * @return
 	 */
 	@PostMapping("/updatePassword")
-	public String updatePassword(@ModelAttribute("userForm") @Validated Users userForm, BindingResult br,
-			//@RequestParam(name = "conPassword", required = false) String conPassword,
+	public String updatePassword(@Validated Users userForm, BindingResult br,
 			@AuthenticationPrincipal DbUsersDetails loginUser, Model model, RedirectAttributes redirectAttributes) {
 		userForm.setUserId(loginUser.getUsers().getUserId());
 		userForm.setUserName(loginUser.getUsers().getUserName());

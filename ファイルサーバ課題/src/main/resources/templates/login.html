@@ -12,15 +12,21 @@
 		<div class="mainContents">
 			<div class="highlight" th:if="${isTimeout}" th:text="${timeoutMsg}"></div>
 			<div class="highlight" th:if="${isErr}" th:text="${errMsg}"></div>
-			<form th:action="@{/authenticate}" method="POST">
+			<form th:action="@{/login}" method="POST" th:object="${users}" name="loginForm">
 				<div class="inputArea">
 					<div class="label"><label for="userId">ユーザID(メールアドレス)</label></div>
-					<input type="text" id="user" name="userId" th:value="*{userid}" placeholder="E-Mail形式で半角英数字254文字以内" size="254">
+					<input type="email" th:field="*{userId}" placeholder="E-Mail形式で半角英数字254文字以内" autocomplete="off"
+							th:classappend="|${#fields.hasErrors('userId')==true ? 'errBox' : ''} ${validUserId==true ? 'errBox' : ''}|">
+					<div th:if="${#fields.hasErrors('userId')}" th:text="${errIdMsg}" class="err"></div>
+					<div class="err" th:if="${validUserId}" th:text="${errMsg}"></div>
 				</div>
 
 				<div class="inputArea">
 					<div class="label"><label for="password">パスワード</label></div>
-					<input type="password" id="password" name="password" th:value="*{password}" placeholder="半角英数字32文字以内" size="32">
+					<input type="password" th:field="*{password}" placeholder="半角英数字32文字以内"
+							th:classappend="|${#fields.hasErrors('password')==true ? 'errBox' : ''} ${validPassword==true ? 'errBox' : ''}|">
+					<div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" th:errorclass="err"></div>
+					<div class="err" th:if="${validPassword}" th:text="${errMsg}"></div>
 				</div>
 
 				<input class="btn pinkBtn longBtn" type="submit" value="ログイン">
@@ -33,6 +39,22 @@
 			</div>
 		</form>
 	</div>
+
+<script type="text/javascript" th:inline="javascript">
+window.addEventListener('DOMContentLoaded', (e) => {
+	const userId = document.getElementById('userId');
+	const password = document.getElementById('password');
+	e.preventDefault();
+	if(/*[[${notValid}]]*/) {
+		document.loginForm.action = '/authenticate';
+		document.loginForm.method = 'POST';
+		userId.value = /*[[${users.userId}]]*/;
+		password.value = /*[[${users.password}]]*/;
+		document.loginForm.submit();
+	}
+});
+
+</script>
 
 </body>
 </html>
