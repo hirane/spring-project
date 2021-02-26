@@ -52,15 +52,22 @@
 		</div>
 	</div>
 
+	<script th:src="@{/js/regist.js}"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 	<script type="text/javascript" th:inline="javascript">
 		/* コントローラから登録完了フラグを取得してメッセージ出力 */
 		if(/*[[${isRegistered}]]*/){
-			alert("登録が完了しました。");
-			location.href = "/";
+			Swal.fire({
+				icon: 'success',
+				html: '登録が完了しました。',
+				showConfirmButton : true,
+				confirmButtonText : 'ログイン画面へ戻る'
+			}).then((result) => {
+				location.href = "/";
+			})
 		}
 
 	</script>
-	<script th:src="@{/js/regist.js}"></script>
 
 </body>
 </html>

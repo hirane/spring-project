@@ -94,11 +94,20 @@ const fileUpload = () => {
 		document.uploadForm.submit();
 	} else {
 		//同名ファイルが存在するが、上書きする場合
-		if (confirm(sameNameCount + ' / ' + uploadFileNum + '件の同名ファイルが存在します。\n上書きしますか。')) {
-			//form送信
-			document.getElementById('isExistSameName').value = "exist";
-			document.uploadForm.submit();
-		}
+		Swal.fire({
+			html: sameNameCount + " / " + uploadFileNum + "件の同名ファイルが存在します。上書きしますか。",
+			icon: 'warning',
+			showCancelButton: true,
+			cancelButtonColor: '#F44',
+			confirmButtonText: '上書きします',
+			cancelButtonText: 'キャンセル',
+		}).then((result) => {
+			if (result.isConfirmed) {
+				//form送信
+				document.getElementById('isExistSameName').value = "exist";
+				document.uploadForm.submit();
+			}
+		})
 	}
 };
 
@@ -243,24 +252,44 @@ checkboxOfRenameByMove.addEventListener('change', (e) => {
 const deleteTarget = document.getElementById('deleteTarget');
 //フォルダ削除時の処理
 const deleteDirectory = (filePath, fileName) => {
-	if (confirm('[ ' + fileName + ' ]内全てを削除します。よろしいですか。')) {
-		deleteTarget.value = filePath;
-		document.deleteForm.submit();
-		return true;
-	} else {
-		return false;
-	}
+	Swal.fire({
+		html: "[ " + fileName + " ]内全てを削除します。よろしいですか。",
+		icon: 'warning',
+		showCancelButton: true,
+		cancelButtonColor: '#F44',
+		confirmButtonText: '削除します',
+		cancelButtonText: 'キャンセル',
+	}).then((result) => {
+		if (result.isConfirmed) {
+			//form送信
+			deleteTarget.value = filePath;
+			document.deleteForm.submit();
+			return true;
+		} else {
+			return false;
+		}
+	})
 }
 
 //ファイル削除時の処理
 const deleteFile = (filePath, fileName) => {
-	if (confirm('[ ' + fileName + ' ]を削除します。よろしいですか。')) {
-		deleteTarget.value = filePath;
-		document.deleteForm.submit();
-		return true;
-	} else {
-		return false;
-	}
+	Swal.fire({
+		html: "[ " + fileName + " ]を削除します。よろしいですか。",
+		icon: 'warning',
+		showCancelButton: true,
+		cancelButtonColor: '#F44',
+		confirmButtonText: '削除します',
+		cancelButtonText: 'キャンセル',
+	}).then((result) => {
+		if (result.isConfirmed) {
+			//form送信
+			deleteTarget.value = filePath;
+			document.deleteForm.submit();
+			return true;
+		} else {
+			return false;
+		}
+	})
 }
 
 

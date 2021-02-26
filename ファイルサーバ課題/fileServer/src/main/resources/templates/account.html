@@ -91,10 +91,17 @@
 	</div>
 
 	<script th:src="@{/js/account.js}"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 	<script type="text/javascript" th:inline="javascript">
    /* コントローラから登録完了フラグを取得してメッセージ出力 */
    if(/*[[${isUpdated}]]*/){
-     alert("ユーザ情報更新が完了しました。");
+	   Swal.fire({
+		   position: 'top-end',
+		   icon: 'success',
+		   html: 'ユーザ情報更新が完了しました。',
+		   showConfirmButton: false,
+		   timer: 2000
+	   });
    }
    </script>
 

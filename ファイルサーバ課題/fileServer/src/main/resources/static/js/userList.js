@@ -19,15 +19,24 @@ const changeUserAuth = (id, authority) => {
 
 //削除時の処理
 const deleteUser = (id, authority) => {
-	if (confirm('ユーザを削除します。よろしいですか。')) {
-		userId.value = id;
-		editAuth.value = authority;
-		form.action = "/delete"
-		document.userListForm.submit();
-		return true;
-	} else {
-		return false;
-	}
+	Swal.fire({
+		text: "ユーザを削除します。よろしいですか。",
+		icon: 'warning',
+		showCancelButton: true,
+		cancelButtonColor: '#F44',
+		confirmButtonText: '削除します',
+		cancelButtonText: 'キャンセル',
+	}).then((result) => {
+		if (result.isConfirmed) {
+			userId.value = id;
+			editAuth.value = authority;
+			form.action = "/delete"
+			document.userListForm.submit();
+			return true;
+		} else {
+			return false;
+		}
+	})
 }
 
 
