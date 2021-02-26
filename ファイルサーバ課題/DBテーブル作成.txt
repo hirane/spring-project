@@ -1,0 +1,43 @@
+--file_id
+--file_name
+--file_obj
+--file_path
+--create_date
+--create_user
+--update_date
+--update_user
+
+CREATE TABLE public.files
+(
+    file_id serial NOT NULL,
+    file_name character varying(255) NOT NULL,
+    file_path character varying(259) NOT NULL,
+    create_date character varying(16) NOT NULL,
+    create_user character varying(32) NOT NULL,
+    update_date character varying(16) NOT NULL,
+    update_user character varying(32) NOT NULL,
+    PRIMARY KEY (file_id),UNIQUE(file_id),UNIQUE(file_path));
+);
+
+ALTER TABLE public.files
+    OWNER to postgres;
+
+
+
+--user_id
+--user_name
+--password
+--authority
+
+CREATE TABLE public.users 
+(
+user_id varchar(254) NOT NULL,
+user_name varchar(32) NOT NULL,
+password varchar(255) NOT NULL,
+authority int NOT null,
+PRIMARY KEY (user_id),UNIQUE(user_id),
+UNIQUE(user_name)
+);
+ALTER TABLE public.users
+    OWNER to postgres;
+
