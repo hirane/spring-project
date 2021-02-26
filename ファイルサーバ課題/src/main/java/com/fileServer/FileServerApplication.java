@@ -16,6 +16,7 @@ public class FileServerApplication {
 	}
 
 
+	//ファイルアップロード時のリクエスト上限オーバー時のエラーハンドリングに使用
 	@Bean
 	public TomcatServletWebServerFactory containerFactory() {
 		return new TomcatServletWebServerFactory() {
@@ -29,40 +30,17 @@ public class FileServerApplication {
 	}
 
 
-
 	/*
 	 * マルチスレッド処理
 	 * →時間がかかりそうなので保留
 	 *
-	@Bean
-	public Executor  taskExecutor1() {
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(1); // デフォルトのThreadのサイズ。あふれるとQueueCapacityのサイズまでキューイングする
-		executor.setQueueCapacity(1); // 待ちのキューのサイズ。あふれるとMaxPoolSizeまでThreadを増やす
-		executor.setMaxPoolSize(5); // どこまでThreadを増やすかの設定。この値からあふれるとその処理はリジェクトされてExceptionが発生する
-		executor.setThreadNamePrefix("Thread1--");
-		executor.initialize();
-		return executor;
-	}
-
 	@Bean("downloadZip")
-	public Executor taskExecutor2() {
+	public Executor taskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(5); // デフォルトのThreadのサイズ。あふれるとQueueCapacityのサイズまでキューイングする
 		executor.setQueueCapacity(1); // 待ちのキューのサイズ。あふれるとMaxPoolSizeまでThreadを増やす
 		executor.setMaxPoolSize(500); // どこまでThreadを増やすかの設定。この値からあふれるとその処理はリジェクトされてExceptionが発生する
-		executor.setThreadNamePrefix("Thread2--");
-		executor.initialize();
-		return executor;
-	}
-
-	@Bean("upload")
-	public Executor taskExecutor3() {
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(5); // デフォルトのThreadのサイズ。あふれるとQueueCapacityのサイズまでキューイングする
-		executor.setQueueCapacity(1); // 待ちのキューのサイズ。あふれるとMaxPoolSizeまでThreadを増やす
-		executor.setMaxPoolSize(500); // どこまでThreadを増やすかの設定。この値からあふれるとその処理はリジェクトされてExceptionが発生する
-		executor.setThreadNamePrefix("Thread3--");
+		executor.setThreadNamePrefix("Thread--");
 		executor.initialize();
 		return executor;
 	}

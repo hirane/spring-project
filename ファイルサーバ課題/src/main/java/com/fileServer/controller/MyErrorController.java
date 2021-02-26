@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Controller
 @RequestMapping("/error")
 public class MyErrorController implements ErrorController {
-
 
 	/**
 	 * エラーページのパスを返す。
@@ -51,7 +53,7 @@ public class MyErrorController implements ErrorController {
 	 */
 	private static ModelAndView getHttpStatus(HttpServletRequest req, ModelAndView mav) {
 		// HTTP ステータスを決める
-		// ここでは 404と403 以外は全部 500 にする
+		// ここでは 404と403 以外は全部 500 にし、HTTPステータスと遷移先をセットして返す
 		Object statusCode = req.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		if (statusCode != null && statusCode.toString().equals("404")) {
@@ -81,26 +83,20 @@ public class MyErrorController implements ErrorController {
 
 		// エラー情報を取得
 		Map<String, Object> attr = getErrorAttributes(req);
-
+		log.info(attr.toString());
 		// HTTP ステータスを決める
 //		HttpStatus status = getHttpStatus(req, mav);
 		mav = getHttpStatus(req, mav);
 
-		// HTTP ステータスをセットする
-//		mav.setStatus(status);
-
-		// ビュー名を指定する
-//		mav.setViewName("error");
-
 		// 出力したい情報をセットする
 		mav.addObject("status", mav.getStatus().value());
-		mav.addObject("timestamp", attr.get("timestamp"));
-		mav.addObject("error", attr.get("error"));
-		mav.addObject("exception", attr.get("exception"));
-		mav.addObject("message", attr.get("message"));
-		mav.addObject("errors", attr.get("errors"));
-		mav.addObject("trace", attr.get("trace"));
-		mav.addObject("path", attr.get("path"));
+//		mav.addObject("timestamp", attr.get("timestamp"));
+//		mav.addObject("error", attr.get("error"));
+//		mav.addObject("exception", attr.get("exception"));
+//		mav.addObject("message", attr.get("message"));
+//		mav.addObject("errors", attr.get("errors"));
+//		mav.addObject("trace", attr.get("trace"));
+//		mav.addObject("path", attr.get("path"));
 
 		return mav;
 	}

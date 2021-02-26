@@ -11,7 +11,6 @@ public class FileData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 //	ファイルID→SERIAL型のため自動採番
-//	DB確認したところ、SERIAL型で作成してもinteger型になってしまっていて、原因不明
 	private int fileId;
 
 //	ファイル名
@@ -31,11 +30,5 @@ public class FileData implements Serializable {
 
 //	更新者
 	private String updateUser;
-
-
-//	ファイルアップロード時に使用
-//	うまくいかなかったので保留
-//	参考にしたURL: https://qiita.com/MizoguchiKenji/items/0aa1f2b385e73c36c24d
-//	private MultipartFile multipartFile;
 
 }

@@ -6,78 +6,16 @@
 <link th:href="@{/css/common.css}" rel="stylesheet">
 </head>
 <body class="backgroundBlue">
-	<!--/*
-<div th:text="'timestamp: ' + ${timestamp}"></div>
-<div th:text="'status: ' + ${status}"></div>
-<div th:text="'error: ' + ${error}"></div>
-<div th:text="'exception: ' + ${exception}"></div>
-<div th:text="'message: ' + ${message}"></div>
-<div th:text="'errors: ' + ${errors}"></div>
-<div th:text="'trace: ' + ${trace}"></div>
-<div th:text="'path: ' + ${path}"></div>
-*/-->
-
 	<div class="contentsWrap errWrap">
 		<div th:if="${status} == 403" class="errContents">
 			<form th:action="@{/logout}" method="POST">
 				<img th:src="@{/img/ojigi_animal_neko.png}">
 				<h2 th:text="${status} + ' Forbidden'" class="errHeading"></h2>
-				<p th:text="${timestamp}"></p>
 				<p>このページに対してアクセス権限がありません。</p>
 				<p>お手数ですが、ログインからやり直してください。</p>
 				<input class="btn pinkBtn errBtn" type="submit" value="ログイン画面へ">
-
-				<div th:text="'path: ' + ${path}"></div>
-				<div th:text="'error: ' + ${error}"></div>
-				<div th:text="'exception: ' + ${exception}"></div>
-				<div th:text="'message: ' + ${message}"></div>
-				<div th:text="'errors: ' + ${errors}"></div>
-				<div th:text="'trace: ' + ${trace}"></div>
-
 			</form>
 		</div>
-
-	<!--/*
-		<div th:if="${status} == 404" class="errContents">
-			<form th:action="@{/logout}" method="POST">
-				<img th:src="@{/img/internet_404_page_not_found_j.png}">
-				<h2 th:text="${status} + ' Not Found'" class="errHeading"></h2>
-				<p th:text="${timestamp}"></p>
-				<p>お探しのページは見つかりませんでした。</p>
-				<p>お手数ですが、ログインからやり直してください。</p>
-				<input class="btn pinkBtn errBtn" type="submit" value="ログイン画面へ">
-
-				<div th:text="'path: ' + ${path}"></div>
-				<div th:text="'error: ' + ${error}"></div>
-				<div th:text="'exception: ' + ${exception}"></div>
-				<div th:text="'message: ' + ${message}"></div>
-				<div th:text="'errors: ' + ${errors}"></div>
-				<div th:text="'trace: ' + ${trace}"></div>
-
-			</form>
-		</div>
-
-		<div th:if="${status} == 500" class="errContents">
-			<form th:action="@{/logout}" method="POST">
-				<img th:src="@{/img/ojigi_animal_neko.png}">
-				<h2 th:text="${status} + ' 内部エラー'" class="errHeading"></h2>
-				<p th:text="${timestamp}"></p>
-				<p>内部エラーが発生しました。</p>
-				<p>お手数ですが、ログインからやり直してください。</p>
-				<input class="btn pinkBtn errBtn" type="submit" value="ログイン画面へ">
-
-				<div th:text="'path: ' + ${path}"></div>
-				<div th:text="'error: ' + ${error}"></div>
-				<div th:text="'exception: ' + ${exception}"></div>
-				<div th:text="'message: ' + ${message}"></div>
-				<div th:text="'errors: ' + ${errors}"></div>
-				<div th:text="'trace: ' + ${trace}"></div>
-
-			</form>
-		</div>
-		*/-->
-
 	</div>
-
 </body>
 </html>

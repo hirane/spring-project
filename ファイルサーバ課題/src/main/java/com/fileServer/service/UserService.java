@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fileServer.config.Const;
 import com.fileServer.entity.Users;
 import com.fileServer.mapper.UserMapper;
 
@@ -43,7 +44,7 @@ public class UserService {
 		users.setUserName(userForm.getUserName());
 		users.setPassword(hashedPassword);
 		//ユーザ作成時初期権限は'閲覧者(2)'
-		users.setAuthority(2);
+		users.setAuthority(Const.READABLE_AUTH);
 		//ユーザ登録情報をDBに保存
 		userMapper.insertUserInfo(users);
 	}
@@ -109,22 +110,26 @@ public class UserService {
 		return true;
 	}
 
+
 	/**
-	 * ユーザ名の重複チェック
-	 * @param userId
+	 * キーのユーザ名と同名ユーザが存在するか
+	 * @param
 	 * @return
 	 */
-	/*
-	public boolean isDuplicatedUserName(String userName) {
-		//入力ユーザ名に一致する数を返す
-		int result = userMapper.findUserName(userName);
-		//0のとき重複なしでfalseを返す
-		if (result == 0) {
-			return false;
-		}
-		//以外0のとき重複ありでtrueを返す
-		return true;
+	public boolean findUserName(String userName) {
+		return userMapper.findUserName(userName);
 	}
-	*/
+
+
+	/**
+	 * ユーザ名更新時に、ファイル情報に紐づくユーザ情報を更新
+	 * @param
+	 * @return
+	 */
+	public void updateFilesUser(String newUserName, String oldUserName) {
+		userMapper.updateFilesUser(newUserName, oldUserName);
+	}
+
+
 
 }

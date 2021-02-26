@@ -27,7 +27,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		web.ignoring().antMatchers("/css/**", "/js/**", "/img/**");
 	}
 
-
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable().authorizeRequests()
@@ -88,7 +87,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		auth.userDetailsService(userDetailsService)
 		.passwordEncoder(passwordEncoder());
 	}
-
 
 
 }

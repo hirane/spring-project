@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,15 +27,16 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fileServer.config.Const;
 import com.fileServer.entity.FileData;
 import com.fileServer.entity.FileForm;
 import com.fileServer.mapper.FileMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
@@ -44,6 +44,7 @@ import net.lingala.zip4j.model.enums.CompressionLevel;
 import net.lingala.zip4j.model.enums.CompressionMethod;
 
 @Service
+@Slf4j
 public class FileService {
 
 	//ファイルの検索に関するメソッドを参照する
@@ -61,7 +62,7 @@ public class FileService {
 		File[] dispList = new File(directoryPath).listFiles();
 		//フォルダにアクセス権がない場合
 		if(dispList == null) {
-			return 1;
+			return Const.ACCESS_DENIED_ERR;
 		}
 		Arrays.sort(dispList);
 
@@ -121,7 +122,7 @@ public class FileService {
 		fileForm.setForDispDirectoryNameList(forDispDirectoryNameList);
 		//ファイル表示用のリスト、DBの全情報含む
 		fileForm.setForDispFileNameList(forDispFileNameList);
-		return 0;
+		return Const.PROCESS_SUCCESS;
 	}
 
 
@@ -139,17 +140,15 @@ public class FileService {
 		//リストに存在する全ファイルのデータを詰める
 		allFileInfo = getAllInfo(homeDirectory, allFileInfo);
 		//filesテーブルのデータを全て削除
-		fileMapper.clearFilesTable();
-		//空のfilesテーブルに存在する分のファイルのデータを書き込む
-		for(FileData data: allFileInfo.values()) {
-			fileMapper.insert(data);
-		}
+		fileMapper.delete(null);
+		//mapの値をリストに詰め替え、空のfilesテーブルに存在する分のファイルのデータを書き込む
+		fileMapper.insertAll(new ArrayList<FileData>(allFileInfo.values()));
 	}
 
-	/*
-	再帰処理で全フォルダとファイルのDB上のデータを取得
-	実データはあってもDBにデータが存在しない場合(エクスプローラー上にだけ存在する場合)はunlnownを入れる
-	DB上にデータはあっても実物はない場合(手動でエクスプローラーで消した場合など)は削除
+	/**
+	 *再帰処理で全フォルダとファイルのDB上のデータを取得
+	 *実データはあってもDBにデータが存在しない場合(エクスプローラー上にだけ存在する場合)はunlnownを入れる
+	 *DB上にデータはあっても実物はない場合(手動でエクスプローラーで消した場合など)は削除
 	 */
 	//List<FileData> allFilesList;
 	public HashMap<String, FileData> getAllInfo(File directory, HashMap<String, FileData> allFilesList) {
@@ -182,10 +181,10 @@ public class FileService {
 					FileData data = new FileData();
 					data.setFileName(file.getName());
 					data.setFilePath(file.getAbsolutePath());
-					data.setCreateDate("Unknown Date");
-					data.setCreateUser("Unknown User");
-					data.setUpdateDate("Unknown Date");
-					data.setUpdateUser("Unknown User");
+					data.setCreateDate(Const.UNKNOWN_DATE);
+					data.setCreateUser(Const.UNKNOWN_USER);
+					data.setUpdateDate(Const.UNKNOWN_DATE);
+					data.setUpdateUser(Const.UNKNOWN_USER);
 					allFilesList.put(file.getAbsolutePath(), data);
 				}
 				//再帰処理
@@ -201,10 +200,10 @@ public class FileService {
 					FileData data = new FileData();
 					data.setFileName(file.getName());
 					data.setFilePath(file.getAbsolutePath());
-					data.setCreateDate("Unknown Date");
-					data.setCreateUser("Unknown User");
-					data.setUpdateDate("Unknown Date");
-					data.setUpdateUser("Unknown User");
+					data.setCreateDate(Const.UNKNOWN_DATE);
+					data.setCreateUser(Const.UNKNOWN_USER);
+					data.setUpdateDate(Const.UNKNOWN_DATE);
+					data.setUpdateUser(Const.UNKNOWN_USER);
 					allFilesList.put(file.getAbsolutePath(), data);
 				}
 			}
@@ -214,8 +213,6 @@ public class FileService {
 
 
 	public List<FileData> getAllDirectoriesInfo(File directory, List<FileData> allDirList) {
-		//		List<FileData> filesList = new ArrayList<>(0);
-		//		List<FileData> directoriesList = new ArrayList<>(0);
 		if(!directory.exists()) {
 			return allDirList;
 		}
@@ -235,7 +232,7 @@ public class FileService {
 	}
 
 
-	@Async
+//	@Async
 	@Transactional
 	//アップロード処理
 	//処理失敗なら1、成功なら0を返す
@@ -249,19 +246,18 @@ public class FileService {
 			//MultipartFileのByteを取得し、ファイルの中身を書き込み
 			os.write(multipartFile.getBytes());
 		} catch (IOException e) {
-			System.out.println("アップロード時のエラーです");
-			e.printStackTrace();
+			log.warn("アップロード時にエラーが発生しました", e);
 			//エラーの場合はファイル名を元に戻す
 			if(oldFile != null) {
 				String originalPath = oldFile.getAbsolutePath();
 				originalPath = originalPath.replaceAll("_old$", "");
 				oldFile.renameTo(new File(originalPath));
 			}
-			return 1;
+			return Const.ACCESS_DENIED_ERR;
 		}
 
 		//DB書き込み用の現在の日時を取得
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+		SimpleDateFormat sdf = new SimpleDateFormat(Const.DATE_FORMAT);
 		String nowTime = sdf.format(new Date());
 
 		//DB書き込み処理
@@ -300,7 +296,7 @@ public class FileService {
 			//DBに1件追加
 			fileMapper.insert(data);
 		}
-		return 0;
+		return Const.PROCESS_SUCCESS;
 	}
 
 
@@ -313,7 +309,7 @@ public class FileService {
 		File[] localFiles = new File(uploadPath).listFiles();
 		//アップロードフォルダにアクセス権がない場合
 		if(localFiles == null) {
-			return 1;
+			return Const.ACCESS_DENIED_ERR;
 		}
 		for(File localFile: localFiles) {
 			//同名ファイルが存在していた場合
@@ -332,15 +328,13 @@ public class FileService {
 					return uploadLogic(uploadPath, uploadFile, userName, data, localTempFile);
 				} else {
 					//仮のファイル名にリネームができなかった場合
-					return 1;
+					return Const.PROCESS_FAILED;
 				}
 			}
 		}
 		//同名ファイルが存在しないファイルだった場合
 		return uploadLogic(uploadPath, uploadFile, userName, null, null);
 	}
-
-
 
 
 //	@Transactional
@@ -356,10 +350,9 @@ public class FileService {
 		Pattern tmpPattern = Pattern.compile(" ");
 		String tmpStr = tmpPattern.matcher(tmpName).replaceAll("\\*");
 		try {
-			fileName = URLEncoder.encode(tmpStr, "UTF-8");
+			fileName = URLEncoder.encode(tmpStr, Const.UTF8);
 		} catch (UnsupportedEncodingException e) {
-			System.out.println("個別ファイル、ファイル名エンコードでエラーが発生しました");
-			e.printStackTrace();
+			log.warn("個別ファイル、ファイル名エンコードでエラーが発生しました", e);
 		}
 		//仮に置いた"\\*"を半角スペースに戻す
 		Pattern replacePattern = Pattern.compile("\\*");
@@ -378,23 +371,11 @@ public class FileService {
 		try(InputStream is = new FileInputStream(downloadFileObj); OutputStream os = response.getOutputStream()) {
 			//ダウンロードファイルへ出力
 			IOUtils.copy(is, os);
-			/*
-			byte[] buff = new byte[8192];
-			int len = 0;
-			//入力ストリームのバイトが終わりに達するまで取得し、出力ストリームに書き込む
-			//終わりに達したら-1を返す
-			while ((len = is.read(buff, 0, buff.length)) != -1) {
-				os.write(buff, 0, len);
-			}
-			//バッファにためたデータを書き込む
-			os.flush();
-			*/
 		} catch (IOException e) {
-			System.out.println("個別ファイルの読み込み・書き込み時にエラーが発生しました");
-			e.printStackTrace();
-			return 1;
+			log.warn("個別ファイルの読み込み・書き込み時にエラーが発生しました", e);
+			return Const.PROCESS_FAILED;
 		}
-		return 0;
+		return Const.PROCESS_SUCCESS;
 	}
 
 
@@ -429,10 +410,9 @@ public class FileService {
 
 		//ファイル名エンコード
 		try {
-			fileName = URLEncoder.encode(fileName, "UTF-8");
-		} catch (UnsupportedEncodingException e1) {
-			System.out.println("zip化メソッド、ファイル名エンコードでエラーが発生しました");
-			e1.printStackTrace();
+			fileName = URLEncoder.encode(fileName, Const.UTF8);
+		} catch (UnsupportedEncodingException e) {
+			log.warn("zip化メソッド、ファイル名エンコードでエラーが発生しました", e);
 //			return 1;
 		}
 		//仮に置いた"\\*"を半角スペースに戻す
@@ -441,9 +421,9 @@ public class FileService {
 		String downloadName = replacePattern.matcher(fileName).replaceAll(" ");
 
 		//レスポンスにダウンロードファイルの情報を設定
-		response.setContentType("application/octet-stream;charset=MS932");
+		response.setContentType("application/octet-stream;charset=" + Const.MS932);
 		//ダウンロード時のファイル名を指定
-		response.setHeader("Content-Disposition", "attachment;filename=" + downloadName + ".zip");
+		response.setHeader("Content-Disposition", "attachment;filename=" + downloadName + Const.ZIP_EXTENSION);
 		//バイナリー形式を指定
 		response.setHeader("Content-Transfer-Encoding", "binary");
 
@@ -464,25 +444,25 @@ public class FileService {
 			//一時ファイルのパスの終わりがセパレーターの場合。Windowsでの動作を想定
 			if(tmpdir.endsWith(File.separator)) {
 				//システムの一時フォルダにzipファイルを出力する一時フォルダ作成
-				tempPath = Files.createTempDirectory(Paths.get(tmpdir), "zipoutput_tmp_");
+				tempPath = Files.createTempDirectory(Paths.get(tmpdir), Const.TMP_ZIP_PREFIX);
 			}
 			//一時ファイルのパスの終わりがセパレーターでない場合。Linuxでの動作を想定
 			else {
 				//システムの一時フォルダにzipファイルを出力する一時フォルダ作成
-				tempPath = Files.createTempDirectory(Paths.get(tmpdir), File.separator + "zipoutput_tmp_");
+				tempPath = Files.createTempDirectory(Paths.get(tmpdir), File.separator + Const.TMP_ZIP_PREFIX);
 			}
 		} catch(IOException e) {
-			System.out.println("一時フォルダ作成に失敗しました");
-			e.printStackTrace();
-			return 1;
+			log.warn("一時フォルダ作成に失敗しました", e);
+//			return Const.TMP_MKDIR_FAILED;
+			return Const.PROCESS_FAILED;
 		}
 
 		//出力先フォルダ・ファイル名を設定
-		String outZipFileName = tempPath.toString() + File.separator + downloadName + ".zip";
+		String outZipFileName = tempPath.toString() + File.separator + downloadName + Const.ZIP_EXTENSION;
 		//ZipFileクラスインスタンス生成
 		ZipFile zip = new ZipFile(outZipFileName);
 		//ファイル名の文字化け対策
-		zip.setCharset(Charset.forName("MS932"));
+		zip.setCharset(Charset.forName(Const.MS932));
 		try {
 			//フォルダの場合
 			if(isDirectory) {
@@ -500,9 +480,9 @@ public class FileService {
 				zip.addFiles(dlFiles, param);
 			}
 		} catch(ZipException ze) {
-			System.out.println("zip化処理中にエラーが発生しました");
-			ze.printStackTrace();
-			return 2;
+			log.warn("zip化処理中にエラーが発生しました", ze);
+//			return Const.ZIPPED_PROCESS_ERR;
+			return Const.PROCESS_FAILED;
 		}
 
 		//httpダウンロード
@@ -512,9 +492,9 @@ public class FileService {
 //			IOUtils.copy(is, os);
 			IOUtils.copyLarge(is, os);
 		} catch(IOException e) {
-			System.out.println("zipファイルの読み出し・書き込み時にエラーが発生しました");
-			e.printStackTrace();
-			return 3;
+			log.warn("zipファイルの読み出し・書き込み時にエラーが発生しました", e);
+//			return Const.ZIPFILE_STREAM_ERR;
+			return Const.PROCESS_FAILED;
 		}
 		//一時フォルダに作成したzipファイルを削除
 		finally {
@@ -524,35 +504,8 @@ public class FileService {
 			}
 		}
 		//ダウンロード成功時
-		return 0;
+		return Const.PROCESS_SUCCESS;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	@Transactional
@@ -564,21 +517,17 @@ public class FileService {
 		FileData data = fileMapper.findFileAllInfo(beforeTargetPath);
 		//データが存在しなかった場合は0を返す
 		if(data == null) {
-			return 0;
+			return Const.PROCESS_FAILED;
 		}
+		//リネーム処理 → true / 移動処理 → false
+		boolean isRename = new File(beforeTargetPath).getParent().equals(destination);
+		//対象がディレクトリ → true / 対象がファイル → false
+		boolean isDirectory = new File(beforeTargetPath).isDirectory();
 		//対象フォルダの下層ファイル・フォルダについて、DBから取得した情報を入れるためのMap
 		HashMap<String, FileData> allFileInfo = new HashMap<String, FileData>();
-		//選択対象がディレクトリで、かつ移動処理の場合true
-		boolean isRename = new File(beforeTargetPath).getParent().equals(destination);
-		boolean isDirectory = new File(beforeTargetPath).isDirectory();
 		//リネーム・移動処理の前に、DBに入れるための下層フォルダ・ファイルの情報を取得
 		if(isDirectory) {
 			allFileInfo = getAllInfo(new File(beforeTargetPath), allFileInfo);
-		}
-
-		//beforeTargetPathが存在しないパスの場合
-		if(Objects.equals(allFileInfo, null)) {
-			return 0;
 		}
 
 		//ファイル移動 or ファイル名変更
@@ -587,15 +536,15 @@ public class FileService {
 			Path to = Paths.get(newFilePath);
 			Files.move(from, to);
 		} catch(IOException e) {
-			e.printStackTrace();
+			log.warn("移動もしくはリネーム処理に失敗しました", e);
 			//移動・リネーム処理に失敗した場合、0を返す
-			return 0;
+			return Const.PROCESS_FAILED;
 		}
 
 		//ファイル操作に成功した場合、DB情報の更新
 		//対象ファイル・フォルダのFileDataクラス情報を変更する
 		//現在時刻の取得
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+		SimpleDateFormat sdf = new SimpleDateFormat(Const.DATE_FORMAT);
 		String nowTime = sdf.format(new Date());
 		data.setFilePath(newFilePath);
 		data.setFileName(newTargetName);
@@ -625,11 +574,11 @@ public class FileService {
 				//SQLでUPDATE文実行
 				fileMapper.updateByRename(entry.getKey(), fileData);
 			}
-			return 1;
+			return Const.MOVE_DIR_SUCCESS;
 		}
 		//ファイル移動の処理
 		else if(!isRename && !isDirectory) {
-			return 2;
+			return Const.MOVE_FILE_SUCCESS;
 		}
 		//フォルダリネームの処理
 		else if(isRename && isDirectory) {
@@ -647,22 +596,22 @@ public class FileService {
 				//SQLでUPDATE文実行
 				fileMapper.updateByRename(entry.getKey(), fileData);
 			}
-			return 3;
+			return Const.RENAME_DIR_SUCCESS;
 		}
 		//ファイルリネームの処理
 		else {
-			return 4;
+			return Const.RENAME_FILE_SUCCESS;
 		}
 	}
 
 
 	//新規ディレクトリ作成処理
 	@Transactional
-	public boolean makeNewDirectory(String targetPath, String newDirectoryName, String createUser) {
+	public int makeNewDirectory(String targetPath, String newDirectoryName, String createUser) {
 		File newDirectoryPath = new File(targetPath + File.separator + newDirectoryName);
 		//フォルダ作成できなかった場合、失敗を返す
 		if(!newDirectoryPath.mkdir()) {
-			return false;
+			return Const.PROCESS_FAILED;
 		}
 
 		//ファイル作成に成功した場合、DB情報の更新
@@ -672,12 +621,12 @@ public class FileService {
 		data.setCreateUser(createUser);
 		data.setUpdateUser(createUser);
 		//現在時刻の取得
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+		SimpleDateFormat sdf = new SimpleDateFormat(Const.DATE_FORMAT);
 		String nowTime = sdf.format(new Date());
 		data.setCreateDate(nowTime);
 		data.setUpdateDate(nowTime);
 		fileMapper.insert(data);
-		return true;
+		return Const.PROCESS_SUCCESS;
 	}
 
 
@@ -726,22 +675,22 @@ public class FileService {
 	public int checkSameName(String targetName, String searchDirectoryPath) {
 		//調査する対象フォルダが存在しない場合2を返す
 		if(!new File(searchDirectoryPath).exists()) {
-			return 2;
+			return Const.CHK_SAMENAME_TARGET_NOT_EXIST;
 		}
 		File[] destFiles = new File(searchDirectoryPath).listFiles();
 		//フォルダへのアクセスができない場合3を返す
 		if(destFiles == null) {
-			return 3;
+			return Const.ACCESS_DENIED_ERR;
 		}
 		//同名フォルダ・ファイルが存在する場合1、同名フォルダ・ファイルが存在しない場合0
 		for(File destFile: destFiles) {
 			//同名ファイルが存在する場合
 			if(destFile.getName().equalsIgnoreCase(targetName)) {
-				return 1;
+				return Const.CHK_SAMENAME_EXIST;
 			}
 		}
 		//同名ファイルが存在しない場合
-		return 0;
+		return Const.PROCESS_SUCCESS;
 	}
 
 

@@ -10,7 +10,9 @@ import lombok.Data;
 
 @Data
 public class HttpForm {
-
+	/**
+	 * アップロードされたファイルを格納する変数
+	 */
 	@FileRequired
 	@FileSize
 	@RequestSize

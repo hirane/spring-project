@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fileServer.mapper.UserMapper">
+
+	<!-- ユーザリスト全件取得 -->
+	<select id="findAll" resultType="com.fileServer.entity.Users">
+		SELECT user_id AS userId, user_name AS userName, password, authority FROM users ORDER BY authority=0 DESC, user_id ASC
+	</select>
+
+	<!-- ユーザIDをキにユーザ情報を取得 -->
+	<select id="findById" parameterType="String" resultType="com.fileServer.entity.Users">
+		SELECT user_id AS userId, user_name AS userName, password, authority FROM users WHERE user_id=#{userId}
+	</select>
+
+	<!-- 新規ユーザ登録 -->
+	<insert id="insertUserInfo" parameterType="com.fileServer.entity.Users">
+		INSERT INTO users (user_id, user_name, password, authority) VALUES (#{userId}, #{userName}, #{password}, #{authority})
+	</insert>
+
+	<!-- ユーザ権限変更 -->
+	<update id="updateAuthority">
+		UPDATE users SET authority=#{newAuthority} WHERE user_id=#{updateId}
+	</update>
+
+	<!-- ユーザ削除 -->
+	<delete id="delete" parameterType="String">
+		DELETE FROM users WHERE user_id=#{deleteId}
+	</delete>
+
+	<!-- ユーザ名変更 -->
+	<update id="updateName">
+		UPDATE users SET user_name=#{newName} WHERE user_id=#{userId}
+	</update>
+
+	<!-- パスワード変更 -->
+	<update id="updatePassword">
+		UPDATE users SET password=#{newPassword} WHERE user_id=#{userId}
+	</update>
+
+	<!-- ユーザIDの重複チェック -->
+	<select id="findUserId" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM users WHERE user_id=#{userId}
+	</select>
+
+	<!-- ユーザ名の重複チェック -->
+	<select id="findUserName" parameterType="String" resultType="boolean">
+		SELECT EXISTS (SELECT user_name FROM users WHERE user_name = #{userName})
+	</select>
+
+	<update id="updateFilesUser">
+		UPDATE files SET create_user = #{newUserName} WHERE create_user = #{oldUserName};
+		UPDATE files SET update_user = #{newUserName} WHERE update_user = #{oldUserName};
+	</update>
+
+
+</mapper>

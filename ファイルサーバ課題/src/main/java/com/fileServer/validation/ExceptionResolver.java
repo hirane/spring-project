@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
-
 @Component
 public class ExceptionResolver implements HandlerExceptionResolver {
 

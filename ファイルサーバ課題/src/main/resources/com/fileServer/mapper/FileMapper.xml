@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fileServer.mapper.FileMapper">
+
+	<!-- ファイルをテーブルに追加する -->
+	<insert id="insert" parameterType="com.fileServer.entity.FileData">
+		INSERT INTO files (file_name, file_path, create_date, create_user, update_date, update_user)
+		VALUES (#{fileName}, #{filePath}, #{createDate}, #{createUser}, #{updateDate}, #{updateUser})
+	</insert>
+
+	<!-- リスト内全データをバルクインサート -->
+	<insert id="insertAll" parameterType="com.fileServer.entity.FileData">
+		INSERT INTO files (file_name, file_path, create_date, create_user, update_date, update_user)
+		VALUES
+		<foreach item="fileData" collection="list" open="" separator="," close="">
+		(#{fileData.fileName}, #{fileData.filePath}, #{fileData.createDate}, #{fileData.createUser},
+			#{fileData.updateDate}, #{fileData.updateUser})
+		</foreach>
+	</insert>
+
+	<!-- 削除処理(ファイルパスが指定されていなければ全件削除) -->
+	<delete id="delete" parameterType="String">
+		DELETE FROM files
+		<if test="filePath != null">
+			WHERE file_path = #{filePath}
+		</if>
+	</delete>
+
+	<!-- テーブル内の全リストを検索する -->
+	<select id="isExistFile" parameterType="String" resultType="boolean">
+		SELECT EXISTS (SELECT * FROM files WHERE file_path = #{filePath})
+	</select>
+
+	<!-- テーブル内の、ファイルパスに対応したデータを検索する -->
+	<select id="findFileAllInfo" parameterType="String" resultType="com.fileServer.entity.FileData">
+		SELECT file_id AS fileId, file_name AS fileName, file_path AS filePath, create_date AS createDate,
+				create_user AS createUser, update_date AS updateDate, update_user AS updateUser
+		FROM files
+		WHERE file_path = #{filePath}
+		ORDER BY file_name ASC;
+	</select>
+
+	<!-- file_id、file_name、file_athの情報を取得する -->
+	<select id="findFileIdNamePath" parameterType="String" resultType="com.fileServer.entity.FileData">
+		SELECT file_id AS fileId, file_name AS fileName, file_path AS filePath
+		FROM files
+		WHERE file_path = #{filePath}
+		ORDER BY file_name ASC;
+	</select>
+
+	<!-- 移動・リネームの際に情報を更新する -->
+	<update id="updateByRename">
+		UPDATE files
+		SET file_path = #{fileData.filePath}, file_name = #{fileData.fileName},
+				update_date = #{fileData.updateDate},  update_user = #{fileData.updateUser}
+		WHERE file_path = #{oldFilePath}
+	</update>
+
+</mapper>
