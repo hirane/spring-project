@@ -16,7 +16,7 @@ CREATE TABLE public.files
     create_user character varying(32) NOT NULL,
     update_date character varying(16) NOT NULL,
     update_user character varying(32) NOT NULL,
-    PRIMARY KEY (file_id),UNIQUE(file_id),UNIQUE(file_path));
+    PRIMARY KEY (file_id),UNIQUE(file_id),UNIQUE(file_path)
 );
 
 ALTER TABLE public.files
